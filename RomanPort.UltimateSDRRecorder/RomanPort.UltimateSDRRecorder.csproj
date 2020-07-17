@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A7043799-1BAA-48CE-BDB9-F52E2D90E269}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RomanPort.UltimateSDRRecorder</RootNamespace>
+    <AssemblyName>RomanPort.UltimateSDRRecorder</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SDRSharp.Common">
+      <HintPath>..\..\..\..\Documents\SdrSharp\SDRSharp.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="SDRSharp.PanView">
+      <HintPath>..\..\..\..\Documents\SdrSharp\SDRSharp.PanView.dll</HintPath>
+    </Reference>
+    <Reference Include="SDRSharp.Radio">
+      <HintPath>..\..\..\..\Documents\SdrSharp\SDRSharp.Radio.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Telerik.WinControls">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.Desert">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.Desert.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.Fluent">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.Fluent.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.FluentDark">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.FluentDark.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.HighContrastBlack">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.HighContrastBlack.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.TelerikMetro">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.TelerikMetro.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.TelerikMetroBlue">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.TelerikMetroBlue.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.VisualStudio2012Dark">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.VisualStudio2012Dark.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.VisualStudio2012Light">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.VisualStudio2012Light.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.Windows7">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.Windows7.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.Themes.Windows8">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.Themes.Windows8.dll</HintPath>
+    </Reference>
+    <Reference Include="Telerik.WinControls.UI">
+      <HintPath>..\..\..\..\Documents\SdrSharp\Telerik.WinControls.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="TelerikCommon">
+      <HintPath>..\..\..\..\Documents\SdrSharp\TelerikCommon.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DVR\Entities\DvrConfig.cs" />
+    <Compile Include="DVR\Entities\DvrProgramProfile.cs" />
+    <Compile Include="DVR\Entities\SdrProgramProfileTrigger.cs" />
+    <Compile Include="DVR\Interface\SdrDvrActiveRecordingStatusPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DVR\Interface\SdrDvrActiveRecordingStatusPanel.Designer.cs">
+      <DependentUpon>SdrDvrActiveRecordingStatusPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DVR\Interface\SdrDvrInterface.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DVR\Interface\SdrDvrInterface.Designer.cs">
+      <DependentUpon>SdrDvrInterface.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DVR\Interface\SdrDvrProgramCreationPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DVR\Interface\SdrDvrProgramCreationPanel.Designer.cs">
+      <DependentUpon>SdrDvrProgramCreationPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DVR\Interface\StatusLightColor.cs" />
+    <Compile Include="DVR\Interface\TriggerConfigDialogs\ITriggerConfigDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DVR\Interface\TriggerConfigDialogs\RdsRadioTextTriggerConfig.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DVR\Interface\TriggerConfigDialogs\RdsRadioTextTriggerConfig.Designer.cs">
+      <DependentUpon>RdsRadioTextTriggerConfig.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DVR\Program\DvrProgram.cs" />
+    <Compile Include="DVR\Program\IDvrTrigger.cs" />
+    <Compile Include="DVR\Program\Triggers\DvrNullTrigger.cs" />
+    <Compile Include="DVR\Program\Triggers\DvrRdsTrigger.cs" />
+    <Compile Include="Framework\ConfigFileManager.cs" />
+    <Compile Include="Framework\Output\BufferedOutputStream.cs" />
+    <Compile Include="Framework\Output\BufferedWavMultipartFileEncoder.cs" />
+    <Compile Include="Framework\Output\IOneWayStream.cs" />
+    <Compile Include="Framework\Output\IUltimateOutput.cs" />
+    <Compile Include="Framework\Output\IUltimateOutputTempFileEncoder.cs" />
+    <Compile Include="Framework\Output\OutputMultitool.cs" />
+    <Compile Include="Framework\Output\WavEncoder.cs" />
+    <Compile Include="Framework\Output\WavMultipartFileEncoder.cs" />
+    <Compile Include="Framework\RecorderSettings.cs" />
+    <Compile Include="Framework\Sources\AudioSource.cs" />
+    <Compile Include="Framework\Sources\BasebandSource.cs" />
+    <Compile Include="Framework\Sources\BinaryDataReceiver.cs" />
+    <Compile Include="Framework\Sources\ISource.cs" />
+    <Compile Include="Framework\Sources\Processors\AudioProcessor.cs" />
+    <Compile Include="Framework\Sources\Processors\IQProcessor.cs" />
+    <Compile Include="Framework\Swap\ISwap.cs" />
+    <Compile Include="Framework\Swap\MemorySwap.cs" />
+    <Compile Include="Framework\Ui\FileCopyProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\Ui\FileCopyProgress.Designer.cs">
+      <DependentUpon>FileCopyProgress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\Ui\RecorderControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Framework\Ui\RecorderControl.Designer.cs">
+      <DependentUpon>RecorderControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\Ui\RecorderSettingsPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Framework\Ui\RecorderSettingsPanel.Designer.cs">
+      <DependentUpon>RecorderSettingsPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\UltimateRecorder.cs" />
+    <Compile Include="MainControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MainControl.Designer.cs">
+      <DependentUpon>MainControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="UltimateSDRRecorderPlugin.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DVR\Interface\SdrDvrActiveRecordingStatusPanel.resx">
+      <DependentUpon>SdrDvrActiveRecordingStatusPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DVR\Interface\SdrDvrInterface.resx">
+      <DependentUpon>SdrDvrInterface.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DVR\Interface\SdrDvrProgramCreationPanel.resx">
+      <DependentUpon>SdrDvrProgramCreationPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DVR\Interface\TriggerConfigDialogs\RdsRadioTextTriggerConfig.resx">
+      <DependentUpon>RdsRadioTextTriggerConfig.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\Ui\FileCopyProgress.resx">
+      <DependentUpon>FileCopyProgress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\Ui\RecorderControl.resx">
+      <DependentUpon>RecorderControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Framework\Ui\RecorderSettingsPanel.resx">
+      <DependentUpon>RecorderSettingsPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainControl.resx">
+      <DependentUpon>MainControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy C:\Users\Roman\source\repos\RomanPort.UltimateSDRRecorder\RomanPort.UltimateSDRRecorder\bin\Debug\RomanPort.UltimateSDRRecorder.dll C:\Users\Roman\Documents\SdrSharp\</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>taskkill /f /im sdrsharp.exe 2&gt;nul 1&gt;nul
+Exit 0</PreBuildEvent>
+  </PropertyGroup>
+</Project>
