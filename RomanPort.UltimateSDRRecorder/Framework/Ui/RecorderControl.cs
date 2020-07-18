@@ -44,6 +44,11 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
             recorder.StopBtnPressed();
         }
 
+        private void saveRtAutoNameBtn_Click(object sender, EventArgs e)
+        {
+            recorder.StopBtnPressed(true);
+        }
+
 
 
         public void SetInterfaceRecordingStatus(bool isRecording)
@@ -59,6 +64,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
             labelRecord.Visible = isRecording;
             infoRecord.Visible = isRecording;
             stopRecordingBtn.Visible = isRecording;
+            saveRtAutoNameBtn.Visible = isRecording;
         }
 
         public void SetBufferStats(int seconds, float sizeMB)
@@ -109,6 +115,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
             settingsBtn.Enabled = !saving;
             startBtn.Enabled = !saving;
             stopRecordingBtn.Enabled = !saving;
+            saveRtAutoNameBtn.Enabled = !saving;
             savingState = saving;
         }
     }

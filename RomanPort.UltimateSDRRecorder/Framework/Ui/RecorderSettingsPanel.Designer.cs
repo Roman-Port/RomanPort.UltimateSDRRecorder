@@ -34,14 +34,14 @@
             this.rewindBufferLength = new System.Windows.Forms.NumericUpDown();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.browseOutputFolder = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.rdsAutoNameOutput = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.ampGroup = new System.Windows.Forms.GroupBox();
+            this.amplificationReset = new System.Windows.Forms.Button();
             this.clippingMeter = new System.Windows.Forms.Label();
             this.afAmplicationTrack = new System.Windows.Forms.TrackBar();
             this.afAmplificationLabel = new System.Windows.Forms.Label();
-            this.amplificationReset = new System.Windows.Forms.Button();
             this.applyBtn = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.rewindBufferLength)).BeginInit();
@@ -80,7 +80,7 @@
             this.rewindBufferLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.rewindBufferLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.rewindBufferLabel.Location = new System.Drawing.Point(97, 16);
+            this.rewindBufferLabel.Location = new System.Drawing.Point(100, 16);
             this.rewindBufferLabel.Name = "rewindBufferLabel";
             this.rewindBufferLabel.Size = new System.Drawing.Size(196, 23);
             this.rewindBufferLabel.TabIndex = 1;
@@ -89,7 +89,7 @@
             // 
             // rewindBufferLength
             // 
-            this.rewindBufferLength.Location = new System.Drawing.Point(6, 19);
+            this.rewindBufferLength.Location = new System.Drawing.Point(9, 19);
             this.rewindBufferLength.Maximum = new decimal(new int[] {
             500,
             0,
@@ -115,7 +115,7 @@
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.browseOutputFolder);
-            this.groupBox2.Controls.Add(this.textBox1);
+            this.groupBox2.Controls.Add(this.rdsAutoNameOutput);
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Location = new System.Drawing.Point(12, 102);
@@ -134,15 +134,16 @@
             this.browseOutputFolder.TabIndex = 6;
             this.browseOutputFolder.Text = "Browse...";
             this.browseOutputFolder.UseVisualStyleBackColor = true;
+            this.browseOutputFolder.Click += new System.EventHandler(this.browseOutputFolder_Click);
             // 
-            // textBox1
+            // rdsAutoNameOutput
             // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.rdsAutoNameOutput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Location = new System.Drawing.Point(10, 37);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(208, 20);
-            this.textBox1.TabIndex = 5;
+            this.rdsAutoNameOutput.Location = new System.Drawing.Point(10, 37);
+            this.rdsAutoNameOutput.Name = "rdsAutoNameOutput";
+            this.rdsAutoNameOutput.Size = new System.Drawing.Size(208, 20);
+            this.rdsAutoNameOutput.TabIndex = 5;
             // 
             // label3
             // 
@@ -178,6 +179,16 @@
             this.ampGroup.TabIndex = 7;
             this.ampGroup.TabStop = false;
             this.ampGroup.Text = "Amplification";
+            // 
+            // amplificationReset
+            // 
+            this.amplificationReset.Location = new System.Drawing.Point(116, 61);
+            this.amplificationReset.Name = "amplificationReset";
+            this.amplificationReset.Size = new System.Drawing.Size(23, 23);
+            this.amplificationReset.TabIndex = 8;
+            this.amplificationReset.Text = "1";
+            this.amplificationReset.UseVisualStyleBackColor = true;
+            this.amplificationReset.Click += new System.EventHandler(this.amplificationReset_Click);
             // 
             // clippingMeter
             // 
@@ -217,16 +228,6 @@
             this.afAmplificationLabel.Text = "AF Amplification: 1";
             this.afAmplificationLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // amplificationReset
-            // 
-            this.amplificationReset.Location = new System.Drawing.Point(116, 61);
-            this.amplificationReset.Name = "amplificationReset";
-            this.amplificationReset.Size = new System.Drawing.Size(23, 23);
-            this.amplificationReset.TabIndex = 8;
-            this.amplificationReset.Text = "1";
-            this.amplificationReset.UseVisualStyleBackColor = true;
-            this.amplificationReset.Click += new System.EventHandler(this.amplificationReset_Click);
-            // 
             // applyBtn
             // 
             this.applyBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -234,7 +235,7 @@
             this.applyBtn.Name = "applyBtn";
             this.applyBtn.Size = new System.Drawing.Size(75, 23);
             this.applyBtn.TabIndex = 8;
-            this.applyBtn.Text = "Apply";
+            this.applyBtn.Text = "Save";
             this.applyBtn.UseVisualStyleBackColor = true;
             this.applyBtn.Click += new System.EventHandler(this.applyBtn_Click);
             // 
@@ -273,7 +274,7 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button browseOutputFolder;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox rdsAutoNameOutput;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox ampGroup;
         private System.Windows.Forms.Label afAmplificationLabel;

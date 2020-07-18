@@ -38,19 +38,19 @@
             // 
             this.authorCredit.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.authorCredit.Location = new System.Drawing.Point(3, 261);
+            this.authorCredit.Location = new System.Drawing.Point(3, 267);
             this.authorCredit.Name = "authorCredit";
-            this.authorCredit.Size = new System.Drawing.Size(212, 26);
+            this.authorCredit.Size = new System.Drawing.Size(212, 33);
             this.authorCredit.TabIndex = 3;
             this.authorCredit.Text = "UltimateSdrRecorder by RomanPort";
-            this.authorCredit.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.authorCredit.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // sdrDvr
             // 
             this.sdrDvr.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.sdrDvr.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.sdrDvr.Location = new System.Drawing.Point(3, 182);
+            this.sdrDvr.Location = new System.Drawing.Point(3, 197);
             this.sdrDvr.Name = "sdrDvr";
             this.sdrDvr.Size = new System.Drawing.Size(212, 48);
             this.sdrDvr.TabIndex = 2;
@@ -60,9 +60,9 @@
             this.basebandRecorder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.basebandRecorder.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.basebandRecorder.Location = new System.Drawing.Point(3, 93);
+            this.basebandRecorder.Location = new System.Drawing.Point(3, 100);
             this.basebandRecorder.Name = "basebandRecorder";
-            this.basebandRecorder.Size = new System.Drawing.Size(212, 93);
+            this.basebandRecorder.Size = new System.Drawing.Size(212, 100);
             this.basebandRecorder.TabIndex = 1;
             // 
             // audioRecorder
@@ -72,7 +72,7 @@
             this.audioRecorder.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.audioRecorder.Location = new System.Drawing.Point(3, 3);
             this.audioRecorder.Name = "audioRecorder";
-            this.audioRecorder.Size = new System.Drawing.Size(212, 94);
+            this.audioRecorder.Size = new System.Drawing.Size(212, 100);
             this.audioRecorder.TabIndex = 0;
             // 
             // MainControl
@@ -86,7 +86,7 @@
             this.Controls.Add(this.audioRecorder);
             this.ForeColor = System.Drawing.SystemColors.ControlLight;
             this.Name = "MainControl";
-            this.Size = new System.Drawing.Size(218, 291);
+            this.Size = new System.Drawing.Size(218, 304);
             this.ResumeLayout(false);
 
         }

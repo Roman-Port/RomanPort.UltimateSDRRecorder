@@ -77,6 +77,7 @@ namespace RomanPort.UltimateSDRRecorder
             {
                 Thread t = new Thread(() =>
                 {
+                    Thread.Sleep(3000); //Allow the UI to finish loading
                     var r = MessageBox.Show($"There are {tempFileCount} unsaved reccordings, making up {Math.Round((decimal)tempFileSize / 1024 / 1024, 1)} MB. Is it OK to delete these recordings?", "Unsaved Recordings", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     if (r == DialogResult.Yes)
                     {

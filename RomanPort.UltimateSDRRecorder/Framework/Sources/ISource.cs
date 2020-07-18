@@ -34,6 +34,30 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
 
             //Start
             StartRecording();
+
+            recorder.control.PropertyChanged += Control_PropertyChanged;
+        }
+
+        private void Control_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "StartRadio")
+            {
+                StopRecording();
+                if (_recordingMode == RecordingMode.Audio)
+                {
+                    SampleRate = (double)control.AudioSampleRate;
+                }
+                else
+                {
+                    SampleRate = control.RFBandwidth;
+                    FrequencyOffset = control.IFOffset;
+                }
+                AudioStartedEvent((int)SampleRate);
+                StartRecording();
+            } else if (e.PropertyName == "StopRadio")
+            {
+                StopRecording();
+            }
         }
 
         public abstract void _SetSettings(ISharpControl control);

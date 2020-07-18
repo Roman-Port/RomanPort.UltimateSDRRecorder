@@ -36,7 +36,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
         public WavSampleFormat _wavSampleFormat;
         private Thread _diskWriter;
         private FrequencyTranslator _iqTranslator;
-        private RecordingMode _recordingMode;
+        public RecordingMode _recordingMode;
         private IQProcessor _iqProcessor;
         private AudioProcessor _audioProcessor;
         internal ISharpControl control;
@@ -332,8 +332,9 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
             this._diskWriterRunning = false;
             if (this._diskWriter != null)
             {
-                this._bufferEvent.Set();
-                this._diskWriter.Join();
+                //this._bufferEvent.Set();
+                //this._diskWriter.Join();
+                this._diskWriter.Abort();
             }
             this.Flush();
             this.FreeBuffers();

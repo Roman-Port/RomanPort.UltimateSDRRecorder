@@ -130,6 +130,7 @@
     <Compile Include="DVR\Program\Triggers\DvrNullTrigger.cs" />
     <Compile Include="DVR\Program\Triggers\DvrRdsTrigger.cs" />
     <Compile Include="Framework\ConfigFileManager.cs" />
+    <Compile Include="Framework\Entities\RdsAutoNameHistoryName.cs" />
     <Compile Include="Framework\RecorderTools.cs" />
     <Compile Include="Framework\Output\BufferedOutputStream.cs" />
     <Compile Include="Framework\Output\BufferedWavMultipartFileEncoder.cs" />
@@ -142,6 +143,7 @@
     <Compile Include="Framework\Output\WavEncoder.cs" />
     <Compile Include="Framework\Output\WavMultipartFileEncoder.cs" />
     <Compile Include="Framework\RecorderSettings.cs" />
+    <Compile Include="Framework\Sources\AudioGainTester.cs" />
     <Compile Include="Framework\Sources\AudioSource.cs" />
     <Compile Include="Framework\Sources\BasebandSource.cs" />
     <Compile Include="Framework\Sources\BinaryDataReceiver.cs" />
@@ -150,11 +152,12 @@
     <Compile Include="Framework\Sources\Processors\IQProcessor.cs" />
     <Compile Include="Framework\Swap\ISwap.cs" />
     <Compile Include="Framework\Swap\MemorySwap.cs" />
-    <Compile Include="Framework\Ui\FileCopyProgress.cs">
+    <Compile Include="Framework\Swap\NullSwap.cs" />
+    <Compile Include="Framework\Ui\RdsAutoNameForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Framework\Ui\FileCopyProgress.Designer.cs">
-      <DependentUpon>FileCopyProgress.cs</DependentUpon>
+    <Compile Include="Framework\Ui\RdsAutoNameForm.Designer.cs">
+      <DependentUpon>RdsAutoNameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Framework\Ui\RecorderControl.cs">
       <SubType>UserControl</SubType>
@@ -196,8 +199,8 @@
     <EmbeddedResource Include="DVR\Interface\TriggerConfigDialogs\RdsRadioTextTriggerConfig.resx">
       <DependentUpon>RdsRadioTextTriggerConfig.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Framework\Ui\FileCopyProgress.resx">
-      <DependentUpon>FileCopyProgress.cs</DependentUpon>
+    <EmbeddedResource Include="Framework\Ui\RdsAutoNameForm.resx">
+      <DependentUpon>RdsAutoNameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Framework\Ui\RecorderControl.resx">
       <DependentUpon>RecorderControl.cs</DependentUpon>

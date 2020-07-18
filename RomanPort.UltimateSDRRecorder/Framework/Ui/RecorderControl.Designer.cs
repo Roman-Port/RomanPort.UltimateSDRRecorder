@@ -39,6 +39,7 @@
             this.startBtn = new System.Windows.Forms.Button();
             this.saveBufferBtn = new System.Windows.Forms.Button();
             this.saveBufferContinueBtn = new System.Windows.Forms.Button();
+            this.saveRtAutoNameBtn = new System.Windows.Forms.Button();
             this.recorderContainer.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -47,6 +48,7 @@
             this.recorderContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.recorderContainer.Controls.Add(this.saveRtAutoNameBtn);
             this.recorderContainer.Controls.Add(this.statusError);
             this.recorderContainer.Controls.Add(this.labelRecord);
             this.recorderContainer.Controls.Add(this.infoRecord);
@@ -74,7 +76,7 @@
             this.statusError.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
             this.statusError.Location = new System.Drawing.Point(6, 61);
             this.statusError.Name = "statusError";
-            this.statusError.Size = new System.Drawing.Size(149, 38);
+            this.statusError.Size = new System.Drawing.Size(135, 38);
             this.statusError.TabIndex = 10;
             this.statusError.Text = "ERROR";
             this.statusError.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -82,40 +84,44 @@
             // 
             // labelRecord
             // 
+            this.labelRecord.BackColor = System.Drawing.Color.Transparent;
             this.labelRecord.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelRecord.Location = new System.Drawing.Point(6, 32);
+            this.labelRecord.Location = new System.Drawing.Point(6, 29);
             this.labelRecord.Name = "labelRecord";
             this.labelRecord.Size = new System.Drawing.Size(60, 23);
             this.labelRecord.TabIndex = 9;
             this.labelRecord.Text = "RECORD";
-            this.labelRecord.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelRecord.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // infoRecord
             // 
             this.infoRecord.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.infoRecord.Location = new System.Drawing.Point(67, 32);
+            this.infoRecord.BackColor = System.Drawing.Color.Transparent;
+            this.infoRecord.Location = new System.Drawing.Point(65, 29);
             this.infoRecord.Name = "infoRecord";
-            this.infoRecord.Size = new System.Drawing.Size(143, 23);
+            this.infoRecord.Size = new System.Drawing.Size(120, 23);
             this.infoRecord.TabIndex = 8;
             this.infoRecord.Text = "00:00:00 - 0 MB";
             this.infoRecord.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelBuffer
             // 
+            this.labelBuffer.BackColor = System.Drawing.Color.Transparent;
             this.labelBuffer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelBuffer.Location = new System.Drawing.Point(6, 12);
             this.labelBuffer.Name = "labelBuffer";
             this.labelBuffer.Size = new System.Drawing.Size(60, 23);
             this.labelBuffer.TabIndex = 7;
             this.labelBuffer.Text = "BUFFER";
-            this.labelBuffer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelBuffer.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // infoBuffer
             // 
             this.infoBuffer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.infoBuffer.Location = new System.Drawing.Point(67, 12);
+            this.infoBuffer.BackColor = System.Drawing.Color.Transparent;
+            this.infoBuffer.Location = new System.Drawing.Point(65, 12);
             this.infoBuffer.Name = "infoBuffer";
             this.infoBuffer.Size = new System.Drawing.Size(120, 23);
             this.infoBuffer.TabIndex = 5;
@@ -183,6 +189,21 @@
             this.saveBufferContinueBtn.UseVisualStyleBackColor = true;
             this.saveBufferContinueBtn.Click += new System.EventHandler(this.saveBufferContinueBtn_Click);
             // 
+            // saveRtAutoNameBtn
+            // 
+            this.saveRtAutoNameBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.saveRtAutoNameBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.saveRtAutoNameBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.saveRtAutoNameBtn.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.saveRtAutoNameBtn.Location = new System.Drawing.Point(142, 70);
+            this.saveRtAutoNameBtn.Name = "saveRtAutoNameBtn";
+            this.saveRtAutoNameBtn.Size = new System.Drawing.Size(18, 23);
+            this.saveRtAutoNameBtn.TabIndex = 11;
+            this.saveRtAutoNameBtn.Text = "RT";
+            this.saveRtAutoNameBtn.UseVisualStyleBackColor = true;
+            this.saveRtAutoNameBtn.Visible = false;
+            this.saveRtAutoNameBtn.Click += new System.EventHandler(this.saveRtAutoNameBtn_Click);
+            // 
             // RecorderControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -209,5 +230,6 @@
         private System.Windows.Forms.Label labelBuffer;
         private System.Windows.Forms.Label infoBuffer;
         private System.Windows.Forms.Label statusError;
+        private System.Windows.Forms.Button saveRtAutoNameBtn;
     }
 }

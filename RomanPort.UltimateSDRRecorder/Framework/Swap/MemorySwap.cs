@@ -53,10 +53,16 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Swap
 
         public override void Resize(long size)
         {
-            this.size = size;
-            buffer = new byte[size];
-            bufferPos = 0;
-            bufferFull = false;
+            try
+            {
+                this.size = size;
+                buffer = new byte[size];
+                bufferPos = 0;
+                bufferFull = false;
+            } catch (Exception ex)
+            {
+                TriggerSwapWriteError();
+            }
         }
 
         public override void Write(byte[] data)

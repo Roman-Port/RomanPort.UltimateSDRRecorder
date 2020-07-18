@@ -24,23 +24,28 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
 
         public UltimateRecorder recorder;
 
+        private AudioGainTester clippingTest;
+        private bool hasClipped;
+
         public static readonly Color CLIPCOLOR_CURRENT = Color.FromArgb(255, 128, 128);
         public static readonly Color CLIPCOLOR_PAST = Color.FromArgb(255, 189, 128);
-
-        private void afAmplicationTrack_Scroll(object sender, EventArgs e)
-        {
-            float amp = ((float)afAmplicationTrack.Value) / 10f;
-            afAmplificationLabel.Text = "AF Amplification: " + amp;
-
-            //Set
-            recorder.SetAmplification(amp);
-        }
 
         private void RecorderSettingsPanel_Load(object sender, EventArgs e)
         {
             //Hide amplification part if we're recording baseband
             if (recorder.source.GetType() == typeof(BasebandSource))
+            {
                 ampGroup.Visible = false;
+            } else
+            {
+                //Enable amplification clipping meter
+                clippingTest = new AudioGainTester();
+                clippingTest.ClippingChangedEvent += ClippingTest_ClippingChangedEvent;
+                clippingTest.BeginTest(recorder.control);
+                clippingMeter.BackColor = BackColor;
+                clippingMeter.ForeColor = BackColor;
+                UpdateAfAmp(recorder.settings.amplification);
+            }
 
             //Hide clipping menu
             clippingMeter.BackColor = BackColor;
@@ -51,6 +56,33 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
             SetRewindBufferLabel();
             afAmplicationTrack.Value = (int)(recorder.settings.amplification * 10f);
             afAmplificationLabel.Text = "AF Amplification: " + recorder.settings.amplification;
+            rdsAutoNameOutput.Text = recorder.settings.rds_autoname_output_dir;
+        }
+
+        private void ClippingTest_ClippingChangedEvent(bool clipping)
+        {
+            hasClipped = hasClipped || clipping;
+            Invoke((MethodInvoker)delegate
+            {
+                UpdateClippingMeter(clipping);
+            });
+        }
+
+        private void UpdateClippingMeter(bool clipping)
+        {
+            if(clipping)
+            {
+                clippingMeter.BackColor = CLIPCOLOR_CURRENT;
+                clippingMeter.ForeColor = Color.White;
+            } else if (hasClipped)
+            {
+                clippingMeter.BackColor = CLIPCOLOR_PAST;
+                clippingMeter.ForeColor = Color.White;
+            } else
+            {
+                clippingMeter.BackColor = BackColor;
+                clippingMeter.ForeColor = BackColor;
+            }
         }
 
         private void SetRewindBufferLabel()
@@ -61,23 +93,50 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
 
         private void RecorderSettingsPanel_FormClosing(object sender, FormClosingEventArgs e)
         {
-            
+            //Stop testing
+            if(clippingTest != null)
+            {
+                clippingTest.EndTest();
+            }
         }
 
         private void amplificationReset_Click(object sender, EventArgs e)
         {
-            recorder.SetAmplification(1);
-            afAmplicationTrack.Value = 10;
-            afAmplificationLabel.Text = "AF Amplification: 1";
+            UpdateAfAmp(1);
+        }
+
+        private void afAmplicationTrack_Scroll(object sender, EventArgs e)
+        {
+            UpdateAfAmp((float)afAmplicationTrack.Value / 10);
+        }
+
+        private void UpdateAfAmp(float amp)
+        {
+            recorder.SetAmplification(amp);
+            clippingTest.ChangeAmplification(amp);
+            afAmplicationTrack.Value = (int)(amp * 10);
+            afAmplificationLabel.Text = "AF Amplification: " + amp;
+            hasClipped = false;
+            UpdateClippingMeter(false);
         }
 
         private void applyBtn_Click(object sender, EventArgs e)
         {
-            //Save settings (amplification has already been updated)
+            //Save RDS name
+            recorder.settings.rds_autoname_output_dir = "";
+            if(rdsAutoNameOutput.Text.Length > 0)
+                recorder.settings.rds_autoname_output_dir = rdsAutoNameOutput.Text.TrimEnd('\\').TrimEnd('/') + "\\";
 
-            //Save swap length only if it has changed
-            if(recorder.settings.rewind_buffer_length != (int)rewindBufferLength.Value)
-                recorder.SetSwapLengthSeconds((int)rewindBufferLength.Value);
+            //Save swap size
+            bool swapChanged = rewindBufferLength.Value != recorder.settings.rewind_buffer_length;
+            recorder.settings.rewind_buffer_length = (int)rewindBufferLength.Value;
+
+            //Save config
+            recorder.SaveSettings();
+
+            //Apply rewind buffer size
+            if(swapChanged)
+                recorder.SetSwapLengthSeconds(recorder.settings.rewind_buffer_length);
 
             //Close
             Close();
@@ -87,6 +146,15 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
         {
             //Update preview size
             SetRewindBufferLabel();
+        }
+
+        private void browseOutputFolder_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fd = new FolderBrowserDialog();
+            fd.Description = "Choose the folder you'd like to save RDS auto-named recordings to.";
+            var r = fd.ShowDialog();
+            if (r == DialogResult.OK)
+                rdsAutoNameOutput.Text = fd.SelectedPath;
         }
     }
 }

@@ -212,7 +212,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
         /// <summary>
         /// Flushes things and ends writing. Locks until all data is written. Also prompts the user where to save the file
         /// </summary>
-        public void EndEncoding()
+        public void EndEncoding(string newName = null)
         {
             //Set flag
             userSelectedPath = false;
@@ -222,7 +222,13 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
             buffers.Enqueue(new byte[0]);
 
             //Prompt user for file location if required
-            if (requestedFilename == null)
+            if(newName != null)
+            {
+                //Override with new name
+                requestedFilename = newName;
+                userSelectedPath = true;
+            }
+            else if (requestedFilename == null)
             {
                 //Prompt
                 requestedFilename = OpenFilePicker("wav");
