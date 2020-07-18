@@ -171,56 +171,22 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
 
         public unsafe void IQSamplesIn(Complex* buffer, int length)
         {
-            if (this._circularBufferLength != length)
+            //Translate. Not entirely sure how this works or what it even *does*
+            if (this._iqTranslator == null || this._iqTranslator.SampleRate != this._sampleRate || this._iqTranslator.Frequency != this._frequencyOffset)
             {
-                this.FreeBuffers();
-                this.CreateBuffers(length);
-                this._circularBufferTail = 0;
-                this._circularBufferHead = 0;
+                this._iqTranslator = new FrequencyTranslator(this._sampleRate);
+                this._iqTranslator.Frequency = this._frequencyOffset;
             }
-            if (this._circularBufferUsedCount == BinaryDataReceiver._bufferCount)
-            {
-                ++this._skippedBuffersCount;
-            }
-            else
-            {
-                Complex* circularBufferPtr = this._complexCircularBufferPtrs[this._circularBufferHead];
-                Utils.Memcpy((void*)circularBufferPtr, (void*)buffer, length * sizeof(Complex));
-                if (this._iqTranslator == null || this._iqTranslator.SampleRate != this._sampleRate || this._iqTranslator.Frequency != this._frequencyOffset)
-                {
-                    this._iqTranslator = new FrequencyTranslator(this._sampleRate);
-                    this._iqTranslator.Frequency = this._frequencyOffset;
-                }
-                this._iqTranslator.Process(circularBufferPtr, length);
-                ++this._circularBufferHead;
-                this._circularBufferHead &= BinaryDataReceiver._bufferCount - 1;
-                ++this._circularBufferUsedCount;
-                this._bufferEvent.Set();
-            }
+            this._iqTranslator.Process(buffer, length);
+
+            //Write
+            OnWriteUnsafeBinary((float*)buffer, length);
         }
 
         public unsafe void AudioSamplesIn(float* audio, int length)
         {
-            int size = length / 2;
-            if (this._circularBufferLength != size)
-            {
-                this.FreeBuffers();
-                this.CreateBuffers(size);
-                this._circularBufferTail = 0;
-                this._circularBufferHead = 0;
-            }
-            if (this._circularBufferUsedCount == BinaryDataReceiver._bufferCount)
-            {
-                ++this._skippedBuffersCount;
-            }
-            else
-            {
-                Utils.Memcpy((void*)this._floatCircularBufferPtrs[this._circularBufferHead], (void*)audio, length * 4);
-                ++this._circularBufferHead;
-                this._circularBufferHead &= BinaryDataReceiver._bufferCount - 1;
-                ++this._circularBufferUsedCount;
-                this._bufferEvent.Set();
-            }
+            //Write
+            OnWriteUnsafeBinary(audio, length);
         }
 
         public unsafe void ScaleAudio(float* audio, int length)
@@ -232,55 +198,6 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
                 float* numPtr = audio + index;
                 *numPtr = *numPtr * this._audioGain;
             }
-        }
-
-        private unsafe void DiskWriterThread()
-        {
-            if (this._recordingMode == RecordingMode.Baseband)
-            {
-                this._iqProcessor.IQReady += new IQProcessor.IQReadyDelegate(this.IQSamplesIn);
-                this._iqProcessor.Enabled = true;
-            }
-            else
-            {
-                this._audioProcessor.AudioReady += new AudioProcessor.AudioReadyDelegate(this.AudioSamplesIn);
-                this._audioProcessor.Enabled = true;
-            }
-            while (this._diskWriterRunning && !this.IsStreamFull)
-            {
-                if (this._circularBufferTail == this._circularBufferHead)
-                    this._bufferEvent.WaitOne();
-                if (this._diskWriterRunning && this._circularBufferTail != this._circularBufferHead)
-                {
-                    if (this._recordingMode == RecordingMode.Audio)
-                        this.ScaleAudio(this._floatCircularBufferPtrs[this._circularBufferTail], this._circularBuffers[this._circularBufferTail].Length * 2);
-                    OnWriteUnsafeBinary(this._floatCircularBufferPtrs[this._circularBufferTail], this._circularBuffers[this._circularBufferTail].Length);
-                    --this._circularBufferUsedCount;
-                    ++this._circularBufferTail;
-                    this._circularBufferTail &= BinaryDataReceiver._bufferCount - 1;
-                }
-            }
-            for (; this._circularBufferTail != this._circularBufferHead; this._circularBufferTail &= BinaryDataReceiver._bufferCount - 1)
-            {
-                if ((IntPtr)this._floatCircularBufferPtrs[this._circularBufferTail] != IntPtr.Zero)
-                {
-                    if (this._recordingMode == RecordingMode.Audio)
-                        this.ScaleAudio(this._floatCircularBufferPtrs[this._circularBufferTail], this._circularBuffers[this._circularBufferTail].Length * 2);
-                    OnWriteUnsafeBinary(this._floatCircularBufferPtrs[this._circularBufferTail], this._circularBuffers[this._circularBufferTail].Length);
-                }
-                ++this._circularBufferTail;
-            }
-            if (this._recordingMode == RecordingMode.Baseband)
-            {
-                this._iqProcessor.Enabled = false;
-                this._iqProcessor.IQReady -= new IQProcessor.IQReadyDelegate(this.IQSamplesIn);
-            }
-            else
-            {
-                this._audioProcessor.Enabled = false;
-                this._audioProcessor.AudioReady -= new AudioProcessor.AudioReadyDelegate(this.AudioSamplesIn);
-            }
-            this._diskWriterRunning = false;
         }
 
         private void Flush()
@@ -314,31 +231,32 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
             }
         }
 
-        public void StartRecording()
+        public unsafe void StartRecording()
         {
-            if (this._diskWriter != null)
-                return;
-            this._circularBufferHead = 0;
-            this._circularBufferTail = 0;
-            this._skippedBuffersCount = 0L;
-            this._bufferEvent.Reset();
-            this._diskWriter = new Thread(new ThreadStart(this.DiskWriterThread));
-            this._diskWriterRunning = true;
-            this._diskWriter.Start();
+            if (this._recordingMode == RecordingMode.Baseband)
+            {
+                this._iqProcessor.IQReady += new IQProcessor.IQReadyDelegate(this.IQSamplesIn);
+                this._iqProcessor.Enabled = true;
+            }
+            else
+            {
+                this._audioProcessor.AudioReady += new AudioProcessor.AudioReadyDelegate(this.AudioSamplesIn);
+                this._audioProcessor.Enabled = true;
+            }
         }
 
-        public void StopRecording()
+        public unsafe void StopRecording()
         {
-            this._diskWriterRunning = false;
-            if (this._diskWriter != null)
+            if (this._recordingMode == RecordingMode.Baseband)
             {
-                //this._bufferEvent.Set();
-                //this._diskWriter.Join();
-                this._diskWriter.Abort();
+                this._iqProcessor.Enabled = false;
+                this._iqProcessor.IQReady -= new IQProcessor.IQReadyDelegate(this.IQSamplesIn);
             }
-            this.Flush();
-            this.FreeBuffers();
-            this._diskWriter = (Thread)null;
+            else
+            {
+                this._audioProcessor.Enabled = false;
+                this._audioProcessor.AudioReady -= new AudioProcessor.AudioReadyDelegate(this.AudioSamplesIn);
+            }
         }
 
         //BINARY BIT
