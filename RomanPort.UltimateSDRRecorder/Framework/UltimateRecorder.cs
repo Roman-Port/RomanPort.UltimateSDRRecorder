@@ -1,4 +1,5 @@
 ﻿using RomanPort.UltimateSDRRecorder.Framework.Output;
+using RomanPort.UltimateSDRRecorder.Framework.Output.OutputDevices;
 using RomanPort.UltimateSDRRecorder.Framework.Sources;
 using RomanPort.UltimateSDRRecorder.Framework.Swap;
 using RomanPort.UltimateSDRRecorder.Framework.Ui;
@@ -31,6 +32,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework
         public event RecorderOutputHook hooks; //Other clients can hook into the audio output and get the same audio to handle themselves.
 
         public OutputMultitool activeEncoder;
+        public bool isRecording;
         public System.Timers.Timer uiUpdateTimer;
 
         public const int BYTES_PER_SAMPLE = 2;
@@ -59,31 +61,12 @@ namespace RomanPort.UltimateSDRRecorder.Framework
             uiUpdateTimer = new System.Timers.Timer(100);
             uiUpdateTimer.AutoReset = true;
             uiUpdateTimer.Elapsed += UiUpdateTimer_Elapsed;
-            uiUpdateTimer.Start();
 
             //Start
             source.Assign(this);
         }
 
         public delegate void RecorderOutputHook(byte[] data);
-
-        /// <summary>
-        /// Returns an OutputMultitool with the completion callback specified. The completionCallback will ALWAYS be called from the UI thread
-        /// </summary>
-        /// <param name="completionCallback"></param>
-        /// <returns></returns>
-        private OutputMultitool CreateNewOutput(OutputMultitoolAbortFilePickerBehavior abortBehavior, OutputMultitoolEndEncodingCallback completionCallback)
-        {
-            OutputMultitool m = new OutputMultitool(sampleRate, CHANNELS, BYTES_PER_SAMPLE * 8, settings.amplification, null, OutputMultitoolDiskSpaceBehavior.BufferToMemory, abortBehavior);
-            m.BeginEncoding((OutputMultitoolExitCode exitCode, List<string> filenames) =>
-            {
-                ui.Invoke((MethodInvoker)delegate
-                {
-                    completionCallback(exitCode, filenames);
-                });
-            });
-            return m;
-        }
 
         public void SetAmplification(float amp)
         {
@@ -101,7 +84,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework
 
         private void UiUpdateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (activeEncoder == null)
+            if (isRecording == false)
                 return;
 
             try
@@ -145,7 +128,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework
             swap.Write(data);
 
             //Write to the file if needed
-            if (activeEncoder != null)
+            if (isRecording)
                 activeEncoder.Write(data);
 
             //Allow hooks access
@@ -176,53 +159,37 @@ namespace RomanPort.UltimateSDRRecorder.Framework
 
         public void StartRecordingBtnPressed()
         {
-            if (activeEncoder != null)
+            if (isRecording)
                 return;
 
-            //Reset UI
-            ui.SetInterfaceRecordingStatus(true);
-            ui.SetRecordStats(TimeSpan.Zero, 0);
-
-            //Reset the cycles so that we refresh the disk usage
-            cyclesSinceLastDiskCheck = 5000;
+            //Start refreshing UI
+            uiUpdateTimer.Start();
 
             //Create new encoder
-            activeEncoder = CreateNewOutput(OutputMultitoolAbortFilePickerBehavior.AlwaysPrompt, (OutputMultitoolExitCode exitCode, List<string> filenames) =>
-            {
-                //Reset interface
-                ui.ClearSavingState();
-                ui.SetInterfaceRecordingStatus(false);
-                activeEncoder = null;
-            });
+            activeEncoder = CreateStandardReccorder();
+            isRecording = true;
+            activeEncoder.BeginEncoding();
         }
 
         public void StopBtnPressed()
         {
-            if (activeEncoder == null)
+            if (!isRecording)
                 return;
 
+            //Stop updating UI
+            uiUpdateTimer.Stop();
+
             //Set saving and then end the encoding
-            ui.SetSavingState();
+            isRecording = false;
             activeEncoder.EndEncoding();
         }
 
         public void SaveBufferBtnPressed()
         {
             //Create encoder
-            var e = CreateNewOutput(OutputMultitoolAbortFilePickerBehavior.AlwaysDelete, (OutputMultitoolExitCode exitCode, List<string> filenames) =>
-            {
-                //Reset interface
-                ui.ClearSavingState();
-                ui.SetInterfaceRecordingStatus(false);
+            var e = new RecorderSaveBufferOutputDevice(ui, sampleRate, CHANNELS, BYTES_PER_SAMPLE * 8, settings.amplification, null);
 
-                //If it failed, prompt and delete any files it attempted to create
-                if(exitCode == OutputMultitoolExitCode.AbortOutOfDiskSpace || exitCode == OutputMultitoolExitCode.DropOutOfDiskSpace)
-                {
-                    MessageBox.Show($"Unable to save rewind buffer because your temporary disk is out of space. Free space and try again.", "Saving Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            });
-
-            //Dump the contents of the buffer into it
+            //Dump the contents of the buffer into it. This'll start the recording
             swap.CopyTo(e);
 
             //End
@@ -233,27 +200,35 @@ namespace RomanPort.UltimateSDRRecorder.Framework
         public void SaveBufferContinueBtnPressed()
         {
             //Validate
-            if (activeEncoder != null)
+            if (isRecording)
                 return;
 
-            //Set UI
-            ui.SetInterfaceRecordingStatus(true);
+            //Create recorder
+            var e = CreateStandardReccorder();
+            isRecording = true;
 
-            //Create encoder
-            cyclesSinceLastDiskCheck = 5000;
-            var e = CreateNewOutput(OutputMultitoolAbortFilePickerBehavior.AlwaysPrompt, (OutputMultitoolExitCode exitCode, List<string> filenames) =>
-            {
-                //Reset interface
-                ui.ClearSavingState();
-                ui.SetInterfaceRecordingStatus(false);
-                activeEncoder = null;
-            });
+            //Start refreshing UI
+            uiUpdateTimer.Start();
 
-            //Dump the contents of the buffer into it
+            //Dump the contents of the buffer into it. This'll start the recording
             swap.CopyTo(e);
 
             //Redirect here
             activeEncoder = e;
+        }
+
+        private RecorderStandardOutputDevice CreateStandardReccorder()
+        {
+            //Set UI
+            ui.SetInterfaceRecordingStatus(true);
+            ui.SetRecordStats(TimeSpan.Zero, 0);
+
+            //Reset the cycles so that we refresh the disk usage
+            cyclesSinceLastDiskCheck = 5000;
+
+            //Create encoder
+            var e = new RecorderStandardOutputDevice(this, sampleRate, CHANNELS, BYTES_PER_SAMPLE * 8, settings.amplification, null);
+            return e;
         }
     }
 }

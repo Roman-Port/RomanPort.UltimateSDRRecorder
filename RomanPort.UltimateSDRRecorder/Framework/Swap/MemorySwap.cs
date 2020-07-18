@@ -29,7 +29,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Swap
                 long remainingBytes = size - bufferPos;
 
                 //Copy the remaining bytes, as these are the ones ahead of us (that we would be overwriting), then copy the bytes behind this point that we just wrote
-                s.BlockingWrite(buffer, new WriteIndexParams[] {
+                s.BeginEncoding(buffer, new WriteIndexParams[] {
                     new WriteIndexParams((int)bufferPos, (int)remainingBytes),
                     new WriteIndexParams(0, (int)bufferPos)
                 }, ToggleWriteLock);
@@ -37,7 +37,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Swap
             else
             {
                 //We can just copy all of the bytes, starting at the beginning
-                s.BlockingWrite(buffer, new WriteIndexParams[] {
+                s.BeginEncoding(buffer, new WriteIndexParams[] {
                     new WriteIndexParams(0, (int)bufferPos)
                 }, ToggleWriteLock);
             } 

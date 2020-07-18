@@ -35,9 +35,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.btnConfigureTrigger = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
             this.triggerTime = new System.Windows.Forms.RadioButton();
-            this.label3 = new System.Windows.Forms.Label();
             this.triggerRadioText = new System.Windows.Forms.RadioButton();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -50,6 +48,10 @@
             this.outputFormatRecordAf = new System.Windows.Forms.RadioButton();
             this.outputFormatRecordIq = new System.Windows.Forms.RadioButton();
             this.saveBtn = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.triggerPilot = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -112,8 +114,11 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.label8);
+            this.groupBox2.Controls.Add(this.triggerPilot);
             this.groupBox2.Controls.Add(this.btnConfigureTrigger);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.triggerTime);
@@ -121,7 +126,7 @@
             this.groupBox2.Controls.Add(this.triggerRadioText);
             this.groupBox2.Location = new System.Drawing.Point(12, 86);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(363, 155);
+            this.groupBox2.Size = new System.Drawing.Size(363, 207);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Trigger";
@@ -130,23 +135,13 @@
             // 
             this.btnConfigureTrigger.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnConfigureTrigger.Location = new System.Drawing.Point(10, 122);
+            this.btnConfigureTrigger.Location = new System.Drawing.Point(10, 174);
             this.btnConfigureTrigger.Name = "btnConfigureTrigger";
             this.btnConfigureTrigger.Size = new System.Drawing.Size(347, 23);
             this.btnConfigureTrigger.TabIndex = 4;
             this.btnConfigureTrigger.Text = "Configure Trigger Settings";
             this.btnConfigureTrigger.UseVisualStyleBackColor = true;
             this.btnConfigureTrigger.Click += new System.EventHandler(this.btnConfigureTrigger_Click);
-            // 
-            // label4
-            // 
-            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label4.Location = new System.Drawing.Point(48, 86);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(309, 31);
-            this.label4.TabIndex = 3;
-            this.label4.Text = "Triggers at a specific time and will continue until a time you also set.";
             // 
             // triggerTime
             // 
@@ -158,17 +153,6 @@
             this.triggerTime.Text = "Time Trigger";
             this.triggerTime.UseVisualStyleBackColor = true;
             this.triggerTime.CheckedChanged += new System.EventHandler(this.trigger_CheckedChanged);
-            // 
-            // label3
-            // 
-            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label3.Location = new System.Drawing.Point(48, 38);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(309, 31);
-            this.label3.TabIndex = 1;
-            this.label3.Text = "Triggers when a certain string is detected in the RDS Radio Text field. Ends when" +
-    " that string is no longer found.";
             // 
             // triggerRadioText
             // 
@@ -185,13 +169,13 @@
             // 
             // groupBox3
             // 
-            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.label6);
             this.groupBox3.Controls.Add(this.label5);
             this.groupBox3.Controls.Add(this.changeFreqDial);
             this.groupBox3.Controls.Add(this.changeFreqEnabled);
-            this.groupBox3.Location = new System.Drawing.Point(12, 247);
+            this.groupBox3.Location = new System.Drawing.Point(12, 299);
             this.groupBox3.MinimumSize = new System.Drawing.Size(363, 119);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(363, 119);
@@ -257,7 +241,7 @@
             // 
             // groupBox4
             // 
-            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox4.Controls.Add(this.label7);
             this.groupBox4.Controls.Add(this.outputBrowseBtn);
@@ -265,7 +249,7 @@
             this.groupBox4.Controls.Add(this.outputPath);
             this.groupBox4.Controls.Add(this.label2);
             this.groupBox4.Controls.Add(this.outputFormatRecordIq);
-            this.groupBox4.Location = new System.Drawing.Point(12, 373);
+            this.groupBox4.Location = new System.Drawing.Point(12, 425);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(363, 121);
             this.groupBox4.TabIndex = 3;
@@ -321,7 +305,7 @@
             // saveBtn
             // 
             this.saveBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveBtn.Location = new System.Drawing.Point(258, 503);
+            this.saveBtn.Location = new System.Drawing.Point(258, 555);
             this.saveBtn.Name = "saveBtn";
             this.saveBtn.Size = new System.Drawing.Size(117, 23);
             this.saveBtn.TabIndex = 4;
@@ -329,11 +313,53 @@
             this.saveBtn.UseVisualStyleBackColor = true;
             this.saveBtn.Click += new System.EventHandler(this.saveBtn_Click);
             // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.Location = new System.Drawing.Point(48, 38);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(309, 31);
+            this.label3.TabIndex = 1;
+            this.label3.Text = "Triggers when a certain string is detected in the RDS Radio Text field. Ends when" +
+    " that string is no longer found.";
+            // 
+            // label4
+            // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.Location = new System.Drawing.Point(48, 86);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(309, 31);
+            this.label4.TabIndex = 3;
+            this.label4.Text = "Triggers at a specific time and will continue until a time you also set.";
+            // 
+            // label8
+            // 
+            this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label8.Location = new System.Drawing.Point(48, 136);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(309, 31);
+            this.label8.TabIndex = 6;
+            this.label8.Text = "Triggered when the WBFM broadcast pilot is either lost or detected. Only useful i" +
+    "n WBFM mode.";
+            // 
+            // triggerPilot
+            // 
+            this.triggerPilot.AutoSize = true;
+            this.triggerPilot.Location = new System.Drawing.Point(10, 118);
+            this.triggerPilot.Name = "triggerPilot";
+            this.triggerPilot.Size = new System.Drawing.Size(151, 17);
+            this.triggerPilot.TabIndex = 5;
+            this.triggerPilot.Text = "WBFM Stereo Pilot Trigger";
+            this.triggerPilot.UseVisualStyleBackColor = true;
+            // 
             // SdrDvrProgramCreationPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(387, 538);
+            this.ClientSize = new System.Drawing.Size(387, 590);
             this.Controls.Add(this.saveBtn);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
@@ -366,9 +392,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button btnConfigureTrigger;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.RadioButton triggerTime;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.RadioButton triggerRadioText;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label label6;
@@ -381,5 +405,9 @@
         private System.Windows.Forms.Button saveBtn;
         private System.Windows.Forms.Button outputBrowseBtn;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.RadioButton triggerPilot;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label3;
     }
 }

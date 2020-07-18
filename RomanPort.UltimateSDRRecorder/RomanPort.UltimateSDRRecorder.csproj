@@ -124,16 +124,20 @@
     <Compile Include="DVR\Interface\TriggerConfigDialogs\RdsRadioTextTriggerConfig.Designer.cs">
       <DependentUpon>RdsRadioTextTriggerConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="DVR\Program\DvrMultitoolOutputDevice.cs" />
     <Compile Include="DVR\Program\DvrProgram.cs" />
     <Compile Include="DVR\Program\IDvrTrigger.cs" />
     <Compile Include="DVR\Program\Triggers\DvrNullTrigger.cs" />
     <Compile Include="DVR\Program\Triggers\DvrRdsTrigger.cs" />
     <Compile Include="Framework\ConfigFileManager.cs" />
+    <Compile Include="Framework\RecorderTools.cs" />
     <Compile Include="Framework\Output\BufferedOutputStream.cs" />
     <Compile Include="Framework\Output\BufferedWavMultipartFileEncoder.cs" />
     <Compile Include="Framework\Output\IOneWayStream.cs" />
     <Compile Include="Framework\Output\IUltimateOutput.cs" />
     <Compile Include="Framework\Output\IUltimateOutputTempFileEncoder.cs" />
+    <Compile Include="Framework\Output\OutputDevices\RecorderSaveBufferOutputDevice.cs" />
+    <Compile Include="Framework\Output\OutputDevices\RecorderStandardOutputDevice.cs" />
     <Compile Include="Framework\Output\OutputMultitool.cs" />
     <Compile Include="Framework\Output\WavEncoder.cs" />
     <Compile Include="Framework\Output\WavMultipartFileEncoder.cs" />

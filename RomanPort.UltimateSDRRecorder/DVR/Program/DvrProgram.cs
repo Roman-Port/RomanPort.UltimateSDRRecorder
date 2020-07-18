@@ -25,9 +25,7 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
         public bool isDeleted;
         public DateTime startedRecordingAt;
 
-        private BufferedOutputStream recordingOutput;
-        private WavEncoder recordingEncoder;
-        private FileStream recordingFile;
+        private DvrMultitoolOutputDevice recordingOutput;
 
         public DvrProgram(DvrProgramProfile profile, UltimateRecorder hostRecorder, SdrDvrInterface dvrInterface)
         {
@@ -48,15 +46,15 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
         {
             if (!isRecording)
                 return 0;
-            else if (recordingFile == null)
+            else if (recordingOutput == null)
                 return 0;
             else
-                return recordingFile.Length;
+                return recordingOutput.bytesWritten;
         }
 
         public long GetBytesWaiting()
         {
-            if (!isRecording)
+            if (recordingOutput == null)
                 return 0;
             else
                 return recordingOutput.bytesWaiting;
@@ -161,37 +159,35 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
 
         public void StartRecording(ISharpControl control)
         {
-            //Get the filename
-            string filename = profile.output_path;
-            for (int i = 0; File.Exists(filename); i++)
-                filename = CreateFilenameWithIndex(i);
-
             //Set flags
             isRecording = true;
             startedRecordingAt = DateTime.UtcNow;
 
+            //Notify
+            dvrInterface.OnProgramBegin(this);
+
             //Retune
-            if(profile.change_freq_enabled)
+            if (profile.change_freq_enabled)
                 control.SetFrequency(profile.change_freq_khz * 1000, false);
 
-            //Open file
-            recordingFile = new FileStream(filename, FileMode.Create);
-            recordingEncoder = new WavEncoder(recordingFile, hostRecorder.sampleRate);
-            recordingOutput = new BufferedOutputStream(recordingEncoder);
+            //Get filename
+            string filename = profile.output_path;
+            for (int i = 0; File.Exists(filename); i++)
+                filename = CreateFilenameWithIndex(i);
 
-            //Dump contents of the current swap into this
-            //hostRecorder.swap.CopyTo(recordingOutput);
+            //Create program
+            recordingOutput = new DvrMultitoolOutputDevice(this, hostRecorder.sampleRate, UltimateRecorder.CHANNELS, UltimateRecorder.BYTES_PER_SAMPLE * 8, 1, filename);
+
+            //Dump contents of the current swap into this. This'll start it
+            hostRecorder.swap.CopyTo(recordingOutput);
 
             //Hook
             hostRecorder.hooks += HostRecorder_AudioDataHook;
-
-            //Notify
-            dvrInterface.OnProgramBegin(this);
         }
 
         private void HostRecorder_AudioDataHook(byte[] data)
         {
-            recordingOutput.Write(data, 0, data.Length);
+            recordingOutput.Write(data);
         }
 
         private string CreateFilenameWithIndex(int index)
@@ -207,17 +203,24 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
 
         public void StopRecording()
         {
-            //Unhook
-            hostRecorder.hooks -= HostRecorder_AudioDataHook;
+            //Notify
+            NotifyEnd();
 
             //End the buffered stream
-            recordingOutput.EndRecordingAndWait();
+            if(recordingOutput.recording)
+                recordingOutput.EndEncoding();
+        }
 
-            //Close streams
-            recordingEncoder.Flush();
-            recordingEncoder.Close();
-            recordingFile.Close();
+        /// <summary>
+        /// Notifies clients that we've ended. Used when ending a recording forcefully or gracefully
+        /// </summary>
+        public void NotifyEnd()
+        {
+            //Set status
             isRecording = false;
+            
+            //Unhook
+            hostRecorder.hooks -= HostRecorder_AudioDataHook;
 
             //Notify
             dvrInterface.OnProgramEnd(this);

@@ -53,7 +53,7 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Interface
                     lv.SubItems[5].Text = p.isRecording ? p.GetTimeRecordingString() : "";
                     lv.SubItems[6].Text = p.isRecording ? $"{Math.Round((double)p.GetBytesWritten() / 1024 / 1024, 1) } MB" : "";
                     lv.BackColor = GetBackgroundColor(p);
-                } catch
+                } catch (Exception ex)
                 {
                     //Ignore. Sometimes, if we line up exactly, the form will close while this is executing and case an error
                 }

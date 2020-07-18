@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace RomanPort.UltimateSDRRecorder.Framework.Output
 {
-    public class OutputMultitool
+    public abstract class OutputMultitool
     {
         public const int WAV_FILE_SIZE_OFFSET = 4;
         public const int WAV_DATA_SIZE_OFFSET = 40;
@@ -21,73 +21,199 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
         public short bitsPerSample;
         public float amplification;
         public string requestedFilename;
-        public OutputMultitoolDiskSpaceBehavior outOfDiskSpaceBehavior;
-        public OutputMultitoolAbortFilePickerBehavior abortFilePickerBehavior;
 
         public long bytesWaiting; //Bytes waiting in memory to be written to the disk
         public long bytesWritten; //Total bytes written
         public bool outOfDiskSpace = false;
+        public bool hasBlockingWriteBeenCompleted = false;
 
         private LockDunny ioLock; //Lock this whenever we're writing to the current file
         private ConcurrentQueue<byte[]> buffers; //Stores buffers to be written to the file
-        private bool recording;
+        public bool recording;
         private bool aborted;
         private Thread ioWriterThread;
-        private List<string> filenames; //The filenames used
-        private OutputMultitoolEndEncodingCallback endCallback;
+        public List<string> filenames; //The filenames used
         private bool userSelectedPath; //Set to true when a user chooses the save path for the output file
 
-        private int currentWavLength;
+        private int currentWavLength = -1;
         private FileStream currentFile;
 
-        public OutputMultitool(int sampleRate, short channels, short bitsPerSample, float amplification, string requestedFilename, OutputMultitoolDiskSpaceBehavior outOfDiskSpaceBehavior, OutputMultitoolAbortFilePickerBehavior abortFilePickerBehavior)
+        public OutputMultitool(int sampleRate, short channels, short bitsPerSample, float amplification, string requestedFilename)
         {
             this.sampleRate = sampleRate;
             this.channels = channels;
             this.bitsPerSample = bitsPerSample;
             this.amplification = amplification;
             this.requestedFilename = requestedFilename; //This can also be passed as null to generate a temp file and prompt later
-            this.outOfDiskSpaceBehavior = outOfDiskSpaceBehavior;
-            this.abortFilePickerBehavior = abortFilePickerBehavior;
             ioLock = new LockDunny();
             buffers = new ConcurrentQueue<byte[]>();
             filenames = new List<string>();
         }
 
-        public delegate void OutputMultitoolEndEncodingCallback(OutputMultitoolExitCode exitCode, List<string> filenames);
+        /// <summary>
+        /// Called when we are all done, regardless of the exit status
+        /// </summary>
+        public abstract void OnEncodingFinished();
 
         /// <summary>
-        /// Opens files and begins writing
+        /// Called when we stop recording and begin emptying out the buffer
         /// </summary>
-        public void BeginEncoding(OutputMultitoolEndEncodingCallback completionCallback)
-        {
-            //Set callback
-            endCallback = completionCallback;
-            
-            //Create first file
-            _CreateNextFile();
+        public abstract void OnBeginSaving();
 
-            //Set flags
+        /// <summary>
+        /// Handles an IO error and responds with what to do. Called when the disk is out of space
+        /// </summary>
+        /// <returns></returns>
+        public abstract OutputMultitoolIoErrorAction HandleIOError();
+
+        /// <summary>
+        /// Called when this is aborted out of. Likely used for an error message.
+        /// </summary>
+        public abstract void OnAborted();
+
+        /// <summary>
+        /// Returns the output file to save the aborted file to. Returns null to delete it
+        /// </summary>
+        /// <returns></returns>
+        public abstract string GetAbortedOutputFile();
+
+        /// <summary>
+        /// Begins encoding data after copying initial data. You won't be able to write to buffers until this returns
+        /// 
+        public void BeginEncoding()
+        {
+            //Make sure we haven't already started
+            if (recording)
+                throw new Exception("We've already started encoding!");
+
+            //Set flag
             recording = true;
 
-            //Create the writing worker
+            //Begin thread
             ioWriterThread = new Thread(() =>
             {
-                _WriteThread();
+                //Write the initial data...
+                try
+                {
+                    //Begin the main loop
+                    //Continuously read buffers and write them to the output stream
+                    byte[] buf;
+                    while (recording || buffers.Count > 0)
+                    {
+                        while (!buffers.TryDequeue(out buf))
+                            Thread.Sleep(5);
+                        //Write
+                        _WriteWavSamples(buf, 0, buf.Length);
+                        bytesWaiting -= buf.Length;
+                    }
+                }
+                catch (OutputMultitoolAbortException)
+                {
+                    //Set flag
+                    aborted = true;
+                }
+
+                //Finish
+                _OnEncodingFinished();
+
             });
             ioWriterThread.IsBackground = true;
             ioWriterThread.Start();
         }
 
         /// <summary>
+        /// Begins encoding data after copying initial data. You won't be able to write to buffers until this returns
+        /// 
+        /// Copies from the buffer into the file. This operation will be completed before any additional calls to Write will be processed.
+        /// Potentially long and big copies can be done without consuming many resources using this, as data is not buffered into memory.
+        /// This will spawn a new thread to complete the request and then end it. This function will wait until the thread is spawned and continue execution.
+        /// Ensure that the buffer does not get modified while this is ongoing.
+        /// </summary>
+        /// <param name="buffer">Buffer from which to copy to</param>
+        /// <param name="indexes">Indexes from the buffer to write, in order</param>
+        /// <param name="bufferSetStatus">Requests when the buffer can be written to and when it should be locked</param>
+        public void BeginEncoding(byte[] buffer, WriteIndexParams[] indexes, BlockingWriteBufferSetStatus bufferSetStatus)
+        {
+            //Make sure we haven't already started
+            if (recording)
+                throw new Exception("We've already started encoding!");
+
+            //Set flag
+            recording = true;
+
+            //Pend bytes
+            for (int i = 0; i < indexes.Length; i += 1)
+            {
+                bytesWaiting += indexes[i].length;
+                bytesWritten += indexes[i].length;
+            }
+
+            //Begin thread
+            bool block = true;
+            ioWriterThread = new Thread(() =>
+            {
+                //Write the initial data...
+                try
+                {
+                    //Lock the buffer
+                    bufferSetStatus(true);
+
+                    //We're now safe to continue exeuction in the caller thread
+                    block = false;
+
+                    //Copy from the requested indexes
+                    for (int i = 0; i < indexes.Length; i += 1)
+                    {
+                        _WriteWavSamples(buffer, indexes[i].offset, indexes[i].length);
+                        bytesWaiting -= indexes[i].length;
+                    }
+
+                    //Unlock the buffer
+                    bufferSetStatus(false);
+
+                    //Set this flag
+                    hasBlockingWriteBeenCompleted = true;
+
+                    //Begin the main loop
+                    //Continuously read buffers and write them to the output stream
+                    byte[] buf;
+                    while (recording || buffers.Count > 0)
+                    {
+                        while (!buffers.TryDequeue(out buf))
+                            Thread.Sleep(5);
+                        //Write
+                        _WriteWavSamples(buf, 0, buf.Length);
+                        bytesWaiting -= buf.Length;
+                    }
+                }
+                catch (OutputMultitoolAbortException)
+                {
+                    //Unlock the buffer if we haven't already, just in case
+                    bufferSetStatus(false);
+
+                    //Set flag
+                    block = false;
+                    aborted = true;
+                }
+
+                //Finish
+                _OnEncodingFinished();
+
+            });
+            ioWriterThread.IsBackground = true;
+            ioWriterThread.Start();
+
+            //Wait for the initial block to finish. This won't take long
+            while (block) ;
+        }
+
+        public delegate void BlockingWriteBufferSetStatus(bool locked);
+
+        /// <summary>
         /// Flushes things and ends writing. Locks until all data is written. Also prompts the user where to save the file
         /// </summary>
         public void EndEncoding()
         {
-            //Ignore if aborted
-            if (aborted)
-                return;
-            
             //Set flag
             userSelectedPath = false;
             recording = false;
@@ -107,33 +233,27 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
                 userSelectedPath = true;
             }
 
+            //Begin saving
+            OnBeginSaving();
+
             //We'll call back in a different thread
-        }
-
-        /// <summary>
-        /// Errors out of the encoding, dropping all bytes currently waiting to be written.
-        /// This should NEVER be called from _WriteThread, as doing that would cause this code to softlock
-        /// </summary>
-        /// <param name="exitCode"></param>
-        private void _AbortEncoding(OutputMultitoolExitCode exitCode)
-        {
-            //Set flag
-            aborted = true;
-            
-            //Kill IO thread
-            ioWriterThread.Abort();
-
-            //Finish
-            _OnEncodingFinished(exitCode);
         }
 
         /// <summary>
         /// Called after the user calls EndEncoding once the system finishes writing all the bytes.
         /// This should ONLY be called by _AbortEncoding and _WriteThread
         /// </summary>
-        private void _OnEncodingFinished(OutputMultitoolExitCode exitCode)
+        private void _OnEncodingFinished()
         {
-            //Clear memory
+            //Begin saving if the trigger wasn't called earlier
+            if(aborted)
+                OnBeginSaving();
+
+            //Send aborted trigger
+            if (aborted)
+                OnAborted();
+
+            //Clear memory. At this point we assume all data that can be written has been
             buffers = null;
             GC.Collect();
 
@@ -155,12 +275,10 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
             //Handle file path
             if(aborted && !userSelectedPath)
             {
-                //If we've aborted and the user has not selected a path, follow the default action
-                switch(abortFilePickerBehavior)
-                {
-                    case OutputMultitoolAbortFilePickerBehavior.AlwaysPrompt: requestedFilename = OpenFilePickerInvoke("wav"); break;
-                    case OutputMultitoolAbortFilePickerBehavior.AlwaysDelete: requestedFilename = null; break;
-                }
+                //Fetch
+                if(requestedFilename == null)
+                    requestedFilename = GetAbortedOutputFile();
+                userSelectedPath = true;
             }
             else
             {
@@ -172,8 +290,8 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
             //Save using the path we got earlier
             SaveFiles();
 
-            //Return control to user
-            endCallback(exitCode, filenames);
+            //Return control to the user
+            OnEncodingFinished();
         }
 
         /// <summary>
@@ -200,26 +318,6 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
             }
         }
 
-        /// <summary>
-        /// Queues the current data being written to be written to the disk shortly. Fast
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="offset"></param>
-        /// <param name="length"></param>
-        public void Write(byte[] buffer, int offset, int length)
-        {
-            //Drop if we are no longer recording
-            if (!recording || aborted)
-                return;
-            
-            //Copy and write to buffer
-            byte[] b = new byte[length];
-            Array.Copy(buffer, offset, b, 0, length);
-            bytesWaiting += b.Length;
-            bytesWritten += b.Length;
-            buffers.Enqueue(b);
-        }
-
         public void Write(byte[] b)
         {
             //Drop if we are no longer recording
@@ -230,133 +328,6 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
             bytesWaiting += b.Length;
             bytesWritten += b.Length;
             buffers.Enqueue(b);
-        }
-
-        /// <summary>
-        /// Copies from the buffer into the file. This operation will be completed before any additional calls to Write will be processed.
-        /// Potentially long and big copies can be done without consuming many resources using this, as data is not buffered into memory.
-        /// This will spawn a new thread to complete the request and then end it. This function will wait until the thread is spawned and continue execution.
-        /// Ensure that the buffer does not get modified while this is ongoing.
-        /// </summary>
-        /// <param name="buffer">Buffer from which to copy to</param>
-        /// <param name="indexes">Indexes from the buffer to write, in order</param>
-        /// <param name="bufferSetStatus">Requests when the buffer can be written to and when it should be locked</param>
-        public Thread BlockingWrite(byte[] buffer, WriteIndexParams[] indexes, BlockingWriteBufferSetStatus bufferSetStatus)
-        {
-            //Pend bytes
-            for (int i = 0; i < indexes.Length; i += 1)
-            {
-                bytesWaiting += indexes[i].length;
-                bytesWritten += indexes[i].length;
-            }
-
-            //Begin thread
-            bool block = true;
-            Thread t = new Thread(() =>
-            {
-                //Create the lock on the output stream
-                lock(ioLock)
-                {
-                    //Lock the buffer
-                    bufferSetStatus(true);
-
-                    //We're now safe to continue exeuction in the caller thread
-                    block = false;
-
-                    //Copy from the requested indexes
-                    try
-                    {
-                        throw new IOException();
-                        for (int i = 0; i < indexes.Length; i += 1)
-                        {
-                            _WriteWavSamples(buffer, indexes[i].offset, indexes[i].length);
-                            bytesWaiting -= indexes[i].length;
-                        }
-                    } catch (IOException io)
-                    {
-                        //We're likely out of disk space!
-                        outOfDiskSpace = true;
-                        if (outOfDiskSpaceBehavior == OutputMultitoolDiskSpaceBehavior.ThrowException)
-                        {
-                            throw io;
-                        }
-                        else if (outOfDiskSpaceBehavior == OutputMultitoolDiskSpaceBehavior.BufferToMemory)
-                        {
-                            _AbortEncoding(OutputMultitoolExitCode.AbortOutOfDiskSpace);
-                        }
-                        else
-                        {
-                            throw new Exception("Unknown behavior.");
-                        }
-                    }
-
-                    //Unlock the buffer
-                    bufferSetStatus(false);
-                }
-            });
-            t.IsBackground = true;
-            t.Start();
-            while (block) ;
-            return t;
-        }
-
-        public delegate void BlockingWriteBufferSetStatus(bool locked);
-
-        /* Buffering tools */
-
-        private void _WriteThread()
-        {
-            OutputMultitoolExitCode exitCode = OutputMultitoolExitCode.OK;
-            byte[] buf;
-            //Continuously read buffers and write them to the output stream
-            while (recording || buffers.Count > 0)
-            {
-                while (!buffers.TryPeek(out buf))
-                    Thread.Sleep(5);
-                lock(ioLock)
-                {
-                    try
-                    {
-                        //Write
-                        _WriteWavSamples(buf, 0, buf.Length);
-                        bytesWaiting -= buf.Length;
-
-                        //Remove
-                        if (buffers.TryDequeue(out buf) == false)
-                            throw new Exception("Buffers was modified!");
-                        outOfDiskSpace = false;
-                    } catch (IOException io)
-                    {
-                        //We're likely out of disk space! Try and write buffers shortly
-                        outOfDiskSpace = true;
-                        if (outOfDiskSpaceBehavior == OutputMultitoolDiskSpaceBehavior.ThrowException)
-                        {
-                            throw io;
-                        } else if (outOfDiskSpaceBehavior == OutputMultitoolDiskSpaceBehavior.BufferToMemory)
-                        {
-                            //Check if we've attempted to end the recording
-                            if (!recording && outOfDiskSpaceBehavior == OutputMultitoolDiskSpaceBehavior.BufferToMemory)
-                            {
-                                var result = MessageBox.Show($"There is not enough free space to save the current recording. Free up {Math.Round((double)bytesWaiting / 1024 / 1024, 1)} MB and press retry to save what has been recorded, or press cancel to abort and drop any unsaved data recorded in the last {Math.Round((double)bytesWaiting / channels / (bitsPerSample / 8) / sampleRate, 1)} seconds.", "Cannot Save Recording", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
-                                if (result == DialogResult.Cancel)
-                                {
-                                    exitCode = OutputMultitoolExitCode.DropOutOfDiskSpace;
-                                    break; //Drop samples
-                                }
-                            }
-
-                            //Wait a small amount to try again
-                            Thread.Sleep(1000);
-                        } else
-                        {
-                            throw new Exception("Unknown behavior.");
-                        }
-                    }
-                }
-            }
-
-            //End
-            _OnEncodingFinished(exitCode);
         }
 
         /* WAV tools */
@@ -372,14 +343,20 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
                 int spaceRemaining = WAV_MAX_SIZE - currentWavLength;
 
                 //Create a new file if required
-                if (spaceRemaining <= 0) {
-                    _CreateNextFile();
+                if (spaceRemaining <= 0 || currentWavLength == -1) {
+                    if (RunDiskIoOperation(() =>
+                     {
+                         _CreateNextFile();
+                     })) { return; }
                     spaceRemaining = WAV_MAX_SIZE - currentWavLength;
                 }
 
                 //Write all that we can
                 int writable = Math.Min(spaceRemaining, bytesRemaining);
-                currentFile.Write(data, offset, writable);
+                if (RunDiskIoOperation(() =>
+                {
+                    currentFile.Write(data, offset, writable);
+                })) { return; }
 
                 //Update values
                 offset += writable;
@@ -388,13 +365,61 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
 
                 //Update length in file
                 long pos = currentFile.Position;
-                currentFile.Position = WAV_FILE_SIZE_OFFSET;
-                _WriteSignedInt(currentWavLength + 8);
-                currentFile.Position = WAV_DATA_SIZE_OFFSET;
-                _WriteSignedInt(currentWavLength);
-                currentFile.Position = pos;
+                if (RunDiskIoOperation(() =>
+                {
+                    currentFile.Position = WAV_FILE_SIZE_OFFSET;
+                    _WriteSignedInt(currentWavLength + 8);
+                    currentFile.Position = WAV_DATA_SIZE_OFFSET;
+                    _WriteSignedInt(currentWavLength);
+                    currentFile.Position = pos;
+                })) { return; }
+                outOfDiskSpace = false;
             }
         }
+
+        /// <summary>
+        /// Runs an IO operation that may fail if the disk is out of storage. Attempts to repeat the call until it succeeds. Returns true to drop the buffer and return
+        /// </summary>
+        /// <param name="operation"></param>
+        private bool RunDiskIoOperation(DiskIoOperation operation)
+        {
+            while(true)
+            {
+                //If we've aborted, stop
+                if (aborted)
+                    return true;
+
+                //Attempt
+                try
+                {
+                    /*if (File.ReadAllText("D:\\DISABLE.txt").StartsWith("1"))
+                        throw new IOException();*/
+                    operation();
+                    return false; //succeeded!
+                }
+                catch (IOException)
+                {
+                    //Failed
+                    outOfDiskSpace = true;
+
+                    //Get the action to do
+                    OutputMultitoolIoErrorAction action = HandleIOError();
+
+                    //Handle
+                    if (action == OutputMultitoolIoErrorAction.RetrySample)
+                        Thread.Sleep(500);
+                    else if (action == OutputMultitoolIoErrorAction.AbortRecording)
+                    {
+                        aborted = true;
+                        throw new OutputMultitoolAbortException();
+                    }
+                    else
+                        throw new Exception("Invalid Action");
+                }
+            }
+        }
+
+        private delegate void DiskIoOperation();
 
         private void _WriteTag(string tag)
         {
@@ -567,22 +592,14 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
 
     }
 
-    public enum OutputMultitoolDiskSpaceBehavior
+    public enum OutputMultitoolIoErrorAction
     {
-        ThrowException,
-        BufferToMemory
+        RetrySample,
+        AbortRecording
     }
 
-    public enum OutputMultitoolAbortFilePickerBehavior
+    public class OutputMultitoolAbortException : Exception
     {
-        AlwaysDelete,
-        AlwaysPrompt
-    }
 
-    public enum OutputMultitoolExitCode
-    {
-        OK = 0, //All bytes were ccorrectly written
-        AbortOutOfDiskSpace = 1, //We ran out of disk space and aborted. This is called from BlockingWrite
-        DropOutOfDiskSpace = 2 //We ran out of disk space and dropped unsaved data. This is called from the IO thread
     }
 }

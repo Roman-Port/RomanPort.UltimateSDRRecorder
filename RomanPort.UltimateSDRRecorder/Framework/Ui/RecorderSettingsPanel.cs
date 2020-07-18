@@ -24,14 +24,8 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
 
         public UltimateRecorder recorder;
 
-        //USE WITH CAUTION. This may throw an exception if not used carefully
-        public WavEncoder wavEncoder { get { return null; } }
-
         public static readonly Color CLIPCOLOR_CURRENT = Color.FromArgb(255, 128, 128);
         public static readonly Color CLIPCOLOR_PAST = Color.FromArgb(255, 189, 128);
-
-        private bool clipping;
-        private System.Timers.Timer clippingMeterTimer;
 
         private void afAmplicationTrack_Scroll(object sender, EventArgs e)
         {
@@ -44,19 +38,6 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
 
         private void RecorderSettingsPanel_Load(object sender, EventArgs e)
         {
-            //Only if we're recording do we run the clipping meter
-            if (recorder.activeEncoder != null)
-            {
-                //Subscribe to the clipping events so we can show them
-                wavEncoder.ClipEvent += WavEncoder_ClipEvent;
-
-                //Start clipping meter timer
-                clippingMeterTimer = new System.Timers.Timer(50);
-                clippingMeterTimer.Elapsed += ClippingMeterTimer_Elapsed;
-                clippingMeterTimer.AutoReset = true;
-                clippingMeterTimer.Start();
-            }
-
             //Hide amplification part if we're recording baseband
             if (recorder.source.GetType() == typeof(BasebandSource))
                 ampGroup.Visible = false;
@@ -78,54 +59,9 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
             rewindBufferLabel.Text = $"seconds / {sizeMB} MB";
         }
 
-        private void ClippingMeterTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            try
-            {
-                //Calculate
-                Color c;
-                Color f;
-                if (clipping)
-                {
-                    c = CLIPCOLOR_CURRENT;
-                    f = Color.White;
-                }
-                else if (wavEncoder.clipped)
-                {
-                    c = CLIPCOLOR_PAST;
-                    f = Color.White;
-                }
-                else
-                {
-                    c = BackColor;
-                    f = BackColor;
-                }
-
-                //Set
-                clippingMeter.BackColor = c;
-                clippingMeter.ForeColor = f;
-            }
-            catch
-            {
-                //Ignore
-            }
-        }
-
-        private void WavEncoder_ClipEvent(WavEncoder wav, bool clipping)
-        {
-            this.clipping = clipping;
-        }
-
         private void RecorderSettingsPanel_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (clippingMeterTimer != null)
-            {
-                //Remove events
-                wavEncoder.ClipEvent -= WavEncoder_ClipEvent;
-
-                //Kill timer
-                clippingMeterTimer.Stop();
-            }
+            
         }
 
         private void amplificationReset_Click(object sender, EventArgs e)
