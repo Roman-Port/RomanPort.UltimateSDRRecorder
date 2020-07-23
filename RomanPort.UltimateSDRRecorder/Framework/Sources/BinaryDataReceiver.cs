@@ -14,122 +14,21 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
     /// <summary>
     /// Actually gets the binary audio data, the sends it out in a reasonable way
     /// </summary>
-    public abstract class BinaryDataReceiver : IDisposable
+    public abstract class BinaryDataReceiver
     {
-        private static readonly int _bufferCount = Utils.GetIntSetting("RecordingBufferCount", 8);
-        private readonly float _audioGain = (float)Math.Pow(3.0, 10.0);
-        private readonly SharpEvent _bufferEvent = new SharpEvent(false);
-        private readonly UnsafeBuffer[] _circularBuffers = new UnsafeBuffer[BinaryDataReceiver._bufferCount];
-        private readonly unsafe Complex*[] _complexCircularBufferPtrs = new Complex*[BinaryDataReceiver._bufferCount];
-        private readonly unsafe float*[] _floatCircularBufferPtrs = new float*[BinaryDataReceiver._bufferCount];
-        private const int DefaultAudioGain = 30;
-        private int _circularBufferTail;
-        private int _circularBufferHead;
-        private int _circularBufferLength;
-        private volatile int _circularBufferUsedCount;
-        private long _skippedBuffersCount;
-        private bool _diskWriterRunning;
-        private bool _unityGain;
-        private string _fileName;
         public double _sampleRate;
         private double _frequencyOffset;
         public WavSampleFormat _wavSampleFormat;
-        private Thread _diskWriter;
         private FrequencyTranslator _iqTranslator;
         public RecordingMode _recordingMode;
         private IQProcessor _iqProcessor;
         private AudioProcessor _audioProcessor;
         internal ISharpControl control;
+        public float amplification = 1;
 
-        public bool IsRecording
-        {
-            get
-            {
-                return this._diskWriterRunning;
-            }
-        }
+        public double SampleRate { get; set; }
 
-        public bool IsStreamFull { get; }
-
-        public long BytesWritten { get; }
-
-        public long SkippedBuffers { get; }
-
-        public RecordingMode Mode
-        {
-            get
-            {
-                return this._recordingMode;
-            }
-        }
-
-        public WavSampleFormat Format
-        {
-            get
-            {
-                return this._wavSampleFormat;
-            }
-            set
-            {
-                if (this._diskWriterRunning)
-                    throw new ArgumentException("Format cannot be set while recording");
-                this._wavSampleFormat = value;
-            }
-        }
-
-        public double SampleRate
-        {
-            get
-            {
-                return this._sampleRate;
-            }
-            set
-            {
-                if (this._diskWriterRunning)
-                    throw new ArgumentException("SampleRate cannot be set while recording");
-                this._sampleRate = value;
-            }
-        }
-
-        public int FrequencyOffset
-        {
-            get
-            {
-                return (int)this._frequencyOffset;
-            }
-            set
-            {
-                if (this._diskWriterRunning)
-                    throw new ArgumentException("SampleRate cannot be set while recording");
-                this._frequencyOffset = (double)value;
-            }
-        }
-
-        public string FileName
-        {
-            get
-            {
-                return this._fileName;
-            }
-            set
-            {
-                if (this._diskWriterRunning)
-                    throw new ArgumentException("FileName cannot be set while recording");
-                this._fileName = value;
-            }
-        }
-
-        public bool UnityGain
-        {
-            get
-            {
-                return this._unityGain;
-            }
-            set
-            {
-                this._unityGain = value;
-            }
-        }
+        public int FrequencyOffset { get; set; }
 
         public BinaryDataReceiver()
         {
@@ -137,7 +36,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
             
         }
 
-        public void SetSettings(ISharpControl control, RecordingMode mode, WavSampleFormat format)
+        public unsafe void SetSettings(ISharpControl control, RecordingMode mode, WavSampleFormat format)
         {
             this.control = control;
             if (mode == RecordingMode.Audio)
@@ -146,7 +45,6 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
                 _audioProcessor.Enabled = true;
                 control.RegisterStreamHook((object)this._audioProcessor, ProcessorType.FilteredAudioOutput);
                 SampleRate = (double)control.AudioSampleRate;
-                UnityGain = false;
             }
             else
             {
@@ -160,18 +58,10 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
             this._wavSampleFormat = format;
         }
 
-        public void Dispose()
-        {
-            this.FreeBuffers();
-            if (_audioProcessor != null)
-                control.UnregisterStreamHook(_audioProcessor);
-            if (_iqProcessor != null)
-                control.UnregisterStreamHook(_iqProcessor);
-        }
-
         public unsafe void IQSamplesIn(Complex* buffer, int length)
         {
             //Translate. Not entirely sure how this works or what it even *does*
+            //There's a high chance this might break plugins further down in the chain. If it does, let me know
             if (this._iqTranslator == null || this._iqTranslator.SampleRate != this._sampleRate || this._iqTranslator.Frequency != this._frequencyOffset)
             {
                 this._iqTranslator = new FrequencyTranslator(this._sampleRate);
@@ -183,51 +73,27 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
             OnWriteUnsafeBinary((float*)buffer, length);
         }
 
+        //Length is the number of pairs. Len1 = 8 bytes, 2 floats
         public unsafe void AudioSamplesIn(float* audio, int length)
         {
+            //Create buffer
+            float[] buf = new float[length * 2];
+            var uBuf = UnsafeBuffer.Create(buf);
+            Utils.Memcpy(uBuf, audio, length * 4);
+            
+            //Scale
+            this.ScaleAudio((float*)uBuf, length);
+
             //Write
-            OnWriteUnsafeBinary(audio, length);
+            OnWriteUnsafeBinary((float*)uBuf, length / 2);
         }
 
         public unsafe void ScaleAudio(float* audio, int length)
         {
-            if (this._unityGain)
-                return;
             for (int index = 0; index < length; ++index)
             {
                 float* numPtr = audio + index;
-                *numPtr = *numPtr * this._audioGain;
-            }
-        }
-
-        private void Flush()
-        {
-            //TODO: Close
-        }
-
-        private unsafe void CreateBuffers(int size)
-        {
-            for (int index = 0; index < BinaryDataReceiver._bufferCount; ++index)
-            {
-                this._circularBuffers[index] = UnsafeBuffer.Create(size, sizeof(Complex));
-                this._complexCircularBufferPtrs[index] = (Complex*)(void*)this._circularBuffers[index];
-                this._floatCircularBufferPtrs[index] = (float*)(void*)this._circularBuffers[index];
-            }
-            this._circularBufferLength = size;
-        }
-
-        private unsafe void FreeBuffers()
-        {
-            this._circularBufferLength = 0;
-            for (int index = 0; index < BinaryDataReceiver._bufferCount; ++index)
-            {
-                if (this._circularBuffers[index] != null)
-                {
-                    this._circularBuffers[index].Dispose();
-                    this._circularBuffers[index] = (UnsafeBuffer)null;
-                    this._complexCircularBufferPtrs[index] = (Complex*)null;
-                    this._floatCircularBufferPtrs[index] = (float*)null;
-                }
+                *numPtr = *numPtr * (float)Math.Pow(3.0, 10.0) * amplification;
             }
         }
 
@@ -257,11 +123,15 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
                 this._audioProcessor.Enabled = false;
                 this._audioProcessor.AudioReady -= new AudioProcessor.AudioReadyDelegate(this.AudioSamplesIn);
             }
+            if (_audioProcessor != null)
+                control.UnregisterStreamHook(_audioProcessor);
+            if (_iqProcessor != null)
+                control.UnregisterStreamHook(_iqProcessor);
         }
 
         //BINARY BIT
         public unsafe void OnWriteUnsafeBinary(float* data, int length)
-        {
+        {           
             //Get samples in their binary form
             byte[] buffer;
             switch (this._wavSampleFormat)

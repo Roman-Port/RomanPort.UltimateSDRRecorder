@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.recorderContainer = new System.Windows.Forms.GroupBox();
+            this.saveRtAutoNameBtn = new System.Windows.Forms.Button();
             this.statusError = new System.Windows.Forms.Label();
             this.labelRecord = new System.Windows.Forms.Label();
             this.infoRecord = new System.Windows.Forms.Label();
@@ -39,7 +40,6 @@
             this.startBtn = new System.Windows.Forms.Button();
             this.saveBufferBtn = new System.Windows.Forms.Button();
             this.saveBufferContinueBtn = new System.Windows.Forms.Button();
-            this.saveRtAutoNameBtn = new System.Windows.Forms.Button();
             this.recorderContainer.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -67,6 +67,21 @@
             this.recorderContainer.TabStop = false;
             this.recorderContainer.Text = "groupBox1";
             // 
+            // saveRtAutoNameBtn
+            // 
+            this.saveRtAutoNameBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.saveRtAutoNameBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.saveRtAutoNameBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.saveRtAutoNameBtn.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.saveRtAutoNameBtn.Location = new System.Drawing.Point(142, 70);
+            this.saveRtAutoNameBtn.Name = "saveRtAutoNameBtn";
+            this.saveRtAutoNameBtn.Size = new System.Drawing.Size(18, 23);
+            this.saveRtAutoNameBtn.TabIndex = 11;
+            this.saveRtAutoNameBtn.Text = "RT";
+            this.saveRtAutoNameBtn.UseVisualStyleBackColor = true;
+            this.saveRtAutoNameBtn.Visible = false;
+            this.saveRtAutoNameBtn.Click += new System.EventHandler(this.saveRtAutoNameBtn_Click);
+            // 
             // statusError
             // 
             this.statusError.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
@@ -74,11 +89,11 @@
             this.statusError.BackColor = System.Drawing.Color.Transparent;
             this.statusError.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.statusError.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
-            this.statusError.Location = new System.Drawing.Point(6, 61);
+            this.statusError.Location = new System.Drawing.Point(5, 59);
             this.statusError.Name = "statusError";
-            this.statusError.Size = new System.Drawing.Size(135, 38);
+            this.statusError.Size = new System.Drawing.Size(135, 44);
             this.statusError.TabIndex = 10;
-            this.statusError.Text = "ERROR";
+            this.statusError.Text = "Testttttttttttttttttttttttt";
             this.statusError.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.statusError.Visible = false;
             // 
@@ -188,21 +203,6 @@
             this.saveBufferContinueBtn.Text = "+Record";
             this.saveBufferContinueBtn.UseVisualStyleBackColor = true;
             this.saveBufferContinueBtn.Click += new System.EventHandler(this.saveBufferContinueBtn_Click);
-            // 
-            // saveRtAutoNameBtn
-            // 
-            this.saveRtAutoNameBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveRtAutoNameBtn.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.saveRtAutoNameBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.saveRtAutoNameBtn.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.saveRtAutoNameBtn.Location = new System.Drawing.Point(142, 70);
-            this.saveRtAutoNameBtn.Name = "saveRtAutoNameBtn";
-            this.saveRtAutoNameBtn.Size = new System.Drawing.Size(18, 23);
-            this.saveRtAutoNameBtn.TabIndex = 11;
-            this.saveRtAutoNameBtn.Text = "RT";
-            this.saveRtAutoNameBtn.UseVisualStyleBackColor = true;
-            this.saveRtAutoNameBtn.Visible = false;
-            this.saveRtAutoNameBtn.Click += new System.EventHandler(this.saveRtAutoNameBtn_Click);
             // 
             // RecorderControl
             // 

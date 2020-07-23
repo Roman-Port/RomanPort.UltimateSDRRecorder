@@ -73,6 +73,9 @@ namespace RomanPort.UltimateSDRRecorder.Framework
             //Add evvent to swap
             swap.OnSwapWriteError += Swap_OnSwapWriteError;
 
+            //Set settings
+            SetAmplification(settings.amplification);
+
             //Start
             source.Assign(this);
         }
@@ -111,9 +114,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework
             settings.amplification = amp;
 
             //Set on encoder, if any
-            //TODO
-            /*if (activeEncoder != null)
-                activeEncoder.activeEncoder.SetAmplificationLevel(amp);*/
+            source.amplification = amp;
         }
 
         private DriveInfo lastTempDiskCheck;
@@ -149,8 +150,8 @@ namespace RomanPort.UltimateSDRRecorder.Framework
                 string warning = "";
                 if (activeEncoder.bytesWaiting > 1500000)
                     warning = $"{Math.Round((double)activeEncoder.bytesWaiting / 1024),0} KB waiting for disk";
-                else if(lastTempDiskCheck.AvailableFreeSpace < 5l * 1024l * 1024l * 1024l)
-                    warning = $"LOW SPACE ON TEMP DISK ({lastTempDiskCheck.Name.TrimEnd('\\').TrimEnd(':')}): {Math.Round((double)lastTempDiskCheck.AvailableFreeSpace / 1024 / 1024),0} MB";
+                else if(lastTempDiskCheck.AvailableFreeSpace < 1l * 1024l * 1024l * 1024l)
+                    warning = $"LOW SPACE ON DISK ({lastTempDiskCheck.Name.TrimEnd('\\').TrimEnd(':')}): {Math.Round((double)lastTempDiskCheck.AvailableFreeSpace / 1024 / 1024),0} MB";
                 ui.SetAlertText(warning);
             } catch (Exception ex)
             {

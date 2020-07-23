@@ -16,7 +16,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Swap
 
         public override void CopyTo(OutputMultitool s)
         {
-            
+            s.BeginEncoding();
         }
 
         public override void Pause()

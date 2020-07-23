@@ -46,7 +46,6 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
         public void EndTest()
         {
             source.StopRecording();
-            source.Dispose();
         }
 
         public void ChangeAmplification(float amp)
