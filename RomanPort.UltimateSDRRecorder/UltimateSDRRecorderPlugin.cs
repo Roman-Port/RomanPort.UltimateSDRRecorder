@@ -30,7 +30,7 @@ namespace RomanPort.UltimateSDRRecorder
         public UltimateRecorder audioRecorderPlugin;
         public UltimateRecorder basebandRecorderPlugin;
 
-        public const int CURRENT_VERSION = 1;
+        public const int CURRENT_VERSION = 0;
         public const string UPDATE_URL = "https://raw.githubusercontent.com/Roman-Port/RomanPort.UltimateSDRRecorder/master/updater.xml";
 
         public UserControl Gui
@@ -146,6 +146,8 @@ namespace RomanPort.UltimateSDRRecorder
                 if (update == null)
                     return;
                 if (update.latest_version <= CURRENT_VERSION)
+                    return;
+                if (update.latest_version <= config.latest_skipped_version)
                     return;
 
                 //There's an update!
