@@ -28,22 +28,50 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.authorCredit = new System.Windows.Forms.Label();
+            this.appSettingsBtn = new System.Windows.Forms.Button();
+            this.updateMsgBtn = new System.Windows.Forms.Button();
+            this.updateMsgText = new System.Windows.Forms.Label();
             this.sdrDvr = new RomanPort.UltimateSDRRecorder.DVR.Interface.SdrDvrInterface();
             this.basebandRecorder = new RomanPort.UltimateSDRRecorder.Framework.Ui.RecorderControl();
             this.audioRecorder = new RomanPort.UltimateSDRRecorder.Framework.Ui.RecorderControl();
             this.SuspendLayout();
             // 
-            // authorCredit
+            // appSettingsBtn
             // 
-            this.authorCredit.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.appSettingsBtn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.authorCredit.Location = new System.Drawing.Point(3, 267);
-            this.authorCredit.Name = "authorCredit";
-            this.authorCredit.Size = new System.Drawing.Size(212, 33);
-            this.authorCredit.TabIndex = 3;
-            this.authorCredit.Text = "UltimateSdrRecorder by RomanPort";
-            this.authorCredit.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.appSettingsBtn.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.appSettingsBtn.Location = new System.Drawing.Point(6, 272);
+            this.appSettingsBtn.Name = "appSettingsBtn";
+            this.appSettingsBtn.Size = new System.Drawing.Size(207, 23);
+            this.appSettingsBtn.TabIndex = 4;
+            this.appSettingsBtn.Text = "UltimateSdrRecorder by RomanPort";
+            this.appSettingsBtn.UseVisualStyleBackColor = true;
+            this.appSettingsBtn.Click += new System.EventHandler(this.appSettingsBtn_Click);
+            // 
+            // updateMsgBtn
+            // 
+            this.updateMsgBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.updateMsgBtn.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.updateMsgBtn.Location = new System.Drawing.Point(170, 272);
+            this.updateMsgBtn.Name = "updateMsgBtn";
+            this.updateMsgBtn.Size = new System.Drawing.Size(43, 23);
+            this.updateMsgBtn.TabIndex = 5;
+            this.updateMsgBtn.Text = "Info";
+            this.updateMsgBtn.UseVisualStyleBackColor = true;
+            this.updateMsgBtn.Click += new System.EventHandler(this.updateMsgBtn_Click);
+            // 
+            // updateMsgText
+            // 
+            this.updateMsgText.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.updateMsgText.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.updateMsgText.Location = new System.Drawing.Point(5, 272);
+            this.updateMsgText.Name = "updateMsgText";
+            this.updateMsgText.Size = new System.Drawing.Size(161, 23);
+            this.updateMsgText.TabIndex = 6;
+            this.updateMsgText.Text = "New plugin update available";
+            this.updateMsgText.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // sdrDvr
             // 
@@ -80,7 +108,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.Controls.Add(this.authorCredit);
+            this.Controls.Add(this.updateMsgText);
+            this.Controls.Add(this.updateMsgBtn);
+            this.Controls.Add(this.appSettingsBtn);
             this.Controls.Add(this.sdrDvr);
             this.Controls.Add(this.basebandRecorder);
             this.Controls.Add(this.audioRecorder);
@@ -96,6 +126,8 @@
         private Framework.Ui.RecorderControl audioRecorder;
         private Framework.Ui.RecorderControl basebandRecorder;
         private DVR.Interface.SdrDvrInterface sdrDvr;
-        private System.Windows.Forms.Label authorCredit;
+        private System.Windows.Forms.Button appSettingsBtn;
+        private System.Windows.Forms.Button updateMsgBtn;
+        private System.Windows.Forms.Label updateMsgText;
     }
 }

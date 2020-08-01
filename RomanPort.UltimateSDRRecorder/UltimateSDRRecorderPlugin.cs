@@ -11,6 +11,11 @@ using RomanPort.UltimateSDRRecorder.Framework;
 using RomanPort.UltimateSDRRecorder.Framework.Swap;
 using RomanPort.UltimateSDRRecorder.Framework.Sources;
 using System.Threading;
+using System.Net.Http;
+using System.Net;
+using System.Xml.Serialization;
+using RomanPort.UltimateSDRRecorder.Updater;
+using System.Xml;
 
 namespace RomanPort.UltimateSDRRecorder
 {
@@ -20,8 +25,13 @@ namespace RomanPort.UltimateSDRRecorder
         private ISharpControl _control;
         private MainControl _guiControl;
 
+        public PluginConfigFile config;
+
         public UltimateRecorder audioRecorderPlugin;
         public UltimateRecorder basebandRecorderPlugin;
+
+        public const int CURRENT_VERSION = 1;
+        public const string UPDATE_URL = "https://raw.githubusercontent.com/Roman-Port/RomanPort.UltimateSDRRecorder/master/updater.xml";
 
         public UserControl Gui
         {
@@ -41,7 +51,12 @@ namespace RomanPort.UltimateSDRRecorder
         public void Initialize(ISharpControl control)
         {
             _control = control;
-            _guiControl = new MainControl();
+            _guiControl = new MainControl(this);
+
+            //Load config
+            config = ConfigFileManager.LoadConfigFile<PluginConfigFile>(ConfigFileManager.SAVEKEY_APP);
+            if (config == null)
+                config = new PluginConfigFile();
 
             //Prompt tp delete temp files
             PromptDeleteTempFiles();
@@ -52,6 +67,14 @@ namespace RomanPort.UltimateSDRRecorder
 
             //Create DVR
             _guiControl.ConfigureDvr(control, audioRecorderPlugin, basebandRecorderPlugin);
+
+            //Look for updates
+            CheckForUpdates();
+        }
+
+        public void SaveConfig()
+        {
+            ConfigFileManager.SaveConfigFile(ConfigFileManager.SAVEKEY_APP, config);
         }
 
         private void PromptDeleteTempFiles()
@@ -88,6 +111,51 @@ namespace RomanPort.UltimateSDRRecorder
                 t.IsBackground = true;
                 t.Start();
             }
+        }
+
+        private void CheckForUpdates()
+        {
+            //Check to see if we should look for updates
+            if (!config.check_updates)
+                return;
+            
+            //Checks for updates in a new thread
+            Thread t = new Thread(() =>
+            {
+                //Fetch
+                AppUpdateData update = null;
+                try
+                {
+                    //Request
+                    WebClient wc = new WebClient();
+                    string response = wc.DownloadString(UPDATE_URL);
+
+                    //Deserialize
+                    XmlSerializer ser = new XmlSerializer(typeof(AppUpdateData));
+                    using(StringReader sr = new StringReader(response))
+                    using (XmlReader reader = XmlReader.Create(sr))
+                    {
+                        update = (AppUpdateData)ser.Deserialize(reader);
+                    }
+                } catch
+                {
+                    return;
+                }
+
+                //Check
+                if (update == null)
+                    return;
+                if (update.latest_version <= CURRENT_VERSION)
+                    return;
+
+                //There's an update!
+                _guiControl.Invoke((MethodInvoker)delegate
+                {
+                    _guiControl.OnUpdateReady(update);
+                });
+            });
+            t.IsBackground = true;
+            t.Start();
         }
     }
 }

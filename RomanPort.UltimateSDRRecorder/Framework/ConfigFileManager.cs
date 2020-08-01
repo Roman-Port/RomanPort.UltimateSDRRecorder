@@ -12,6 +12,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework
     public static class ConfigFileManager
     {
         public const string SAVEKEY_DVR = "DVR";
+        public const string SAVEKEY_APP = "PLUGIN_MAIN";
         
         public static T LoadConfigFile<T>(string key)
         {
