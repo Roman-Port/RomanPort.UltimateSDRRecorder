@@ -9,9 +9,9 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
 {
     public class BasebandSource : ISource
     {
-        public override void _SetSettings(ISharpControl control)
+        public BasebandSource() : base(RecordingMode.Baseband, WavSampleFormat.PCM16)
         {
-            SetSettings(control, RecordingMode.Baseband, WavSampleFormat.PCM16);
+
         }
     }
 }

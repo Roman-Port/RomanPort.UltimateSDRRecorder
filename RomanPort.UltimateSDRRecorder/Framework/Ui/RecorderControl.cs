@@ -15,6 +15,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
         public RecorderControl()
         {
             InitializeComponent();
+            SetBufferEnabled(false);
         }
 
         public UltimateRecorder recorder;
@@ -65,6 +66,12 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
             infoRecord.Visible = isRecording;
             stopRecordingBtn.Visible = isRecording;
             saveRtAutoNameBtn.Visible = isRecording;
+        }
+
+        public void SetBufferEnabled(bool enabled)
+        {
+            labelBuffer.Visible = enabled;
+            infoBuffer.Visible = enabled;
         }
 
         public void SetBufferStats(int seconds, float sizeMB)

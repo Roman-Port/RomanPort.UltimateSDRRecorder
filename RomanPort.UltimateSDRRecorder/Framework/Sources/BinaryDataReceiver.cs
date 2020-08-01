@@ -30,32 +30,10 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
 
         public int FrequencyOffset { get; set; }
 
-        public BinaryDataReceiver()
+        public BinaryDataReceiver(RecordingMode mode, WavSampleFormat format)
         {
-            
-            
-        }
-
-        public unsafe void SetSettings(ISharpControl control, RecordingMode mode, WavSampleFormat format)
-        {
-            this.control = control;
-            if (mode == RecordingMode.Audio)
-            {
-                _audioProcessor = new AudioProcessor();
-                _audioProcessor.Enabled = true;
-                control.RegisterStreamHook((object)this._audioProcessor, ProcessorType.FilteredAudioOutput);
-                SampleRate = (double)control.AudioSampleRate;
-            }
-            else
-            {
-                _iqProcessor = new IQProcessor();
-                _iqProcessor.Enabled = true;
-                control.RegisterStreamHook((object)this._iqProcessor, ProcessorType.RawIQ);
-                SampleRate = control.RFBandwidth;
-                FrequencyOffset = control.IFOffset;
-            }
-            this._recordingMode = mode;
-            this._wavSampleFormat = format;
+            _recordingMode = mode;
+            _wavSampleFormat = format;
         }
 
         public unsafe void IQSamplesIn(Complex* buffer, int length)
@@ -97,17 +75,39 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
             }
         }
 
+        public unsafe void SetSettings(ISharpControl control)
+        {
+            this.control = control;
+        }
+
         public unsafe void StartRecording()
         {
             if (this._recordingMode == RecordingMode.Baseband)
             {
-                this._iqProcessor.IQReady += new IQProcessor.IQReadyDelegate(this.IQSamplesIn);
-                this._iqProcessor.Enabled = true;
+                //Create processor
+                _iqProcessor = new IQProcessor();
+                _iqProcessor.IQReady += new IQProcessor.IQReadyDelegate(this.IQSamplesIn);
+                _iqProcessor.Enabled = true;
+
+                //Register processor
+                control.RegisterStreamHook((object)this._iqProcessor, ProcessorType.RawIQ);
+
+                //Set options
+                SampleRate = control.RFBandwidth;
+                FrequencyOffset = control.IFOffset;
             }
             else
             {
-                this._audioProcessor.AudioReady += new AudioProcessor.AudioReadyDelegate(this.AudioSamplesIn);
-                this._audioProcessor.Enabled = true;
+                //Create processor
+                _audioProcessor = new AudioProcessor();
+                _audioProcessor.AudioReady += new AudioProcessor.AudioReadyDelegate(this.AudioSamplesIn);
+                _audioProcessor.Enabled = true;
+
+                //Register processor
+                control.RegisterStreamHook((object)this._audioProcessor, ProcessorType.FilteredAudioOutput);
+
+                //Set settings
+                SampleRate = (double)control.AudioSampleRate;
             }
         }
 

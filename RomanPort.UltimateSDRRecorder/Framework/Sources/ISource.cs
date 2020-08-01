@@ -13,9 +13,10 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
     public abstract class ISource : BinaryDataReceiver
     {
         public event AudioStartedEventArgs AudioStartedEvent;
+        public event AudioEndedEventArgs AudioEndedEvent;
         public event AudioRecievedEventArgs AudioRecievedEvent;
 
-        public ISource() : base()
+        public ISource(RecordingMode mode, WavSampleFormat format) : base(mode, format)
         {
 
         }
@@ -23,41 +24,27 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
         public void Assign(UltimateRecorder recorder)
         {
             //Set binary settings
-            _SetSettings(recorder.control);
+            SetSettings(recorder.control);
 
             //Add events
             AudioRecievedEvent += recorder.OnAudioSamples;
             AudioStartedEvent += recorder.OnAudioReset;
+            AudioEndedEvent += recorder.OnAudioEnded;
             recorder.control.PropertyChanged += Control_PropertyChanged;
-
-            //Set up
-            AudioStartedEvent((int)SampleRate);
-
-            //Start
-            StartRecording();
         }
 
         private void Control_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if(e.PropertyName == "StartRadio")
             {
-                if (_recordingMode == RecordingMode.Audio)
-                {
-                    SampleRate = (double)control.AudioSampleRate;
-                }
-                else
-                {
-                    SampleRate = control.RFBandwidth;
-                    FrequencyOffset = control.IFOffset;
-                }
+                StartRecording();
                 AudioStartedEvent((int)SampleRate);
             } else if (e.PropertyName == "StopRadio")
             {
                 StopRecording();
+                AudioEndedEvent?.Invoke();
             }
         }
-
-        public abstract void _SetSettings(ISharpControl control);
 
         public override void OnGetSamples(byte[] buffer, int count)
         {
@@ -65,6 +52,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
         }
 
         public delegate void AudioStartedEventArgs(int sampleRate);
+        public delegate void AudioEndedEventArgs();
         public delegate void AudioRecievedEventArgs(byte[] data);
     }
 }

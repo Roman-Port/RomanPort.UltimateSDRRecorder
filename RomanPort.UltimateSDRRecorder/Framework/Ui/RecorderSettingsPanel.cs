@@ -112,7 +112,6 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
 
         private void UpdateAfAmp(float amp)
         {
-            recorder.SetAmplification(amp);
             clippingTest.ChangeAmplification(amp);
             afAmplicationTrack.Value = (int)(amp * 10);
             afAmplificationLabel.Text = "AF Amplification: " + amp;
@@ -130,6 +129,9 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
             //Save swap size
             bool swapChanged = rewindBufferLength.Value != recorder.settings.rewind_buffer_length;
             recorder.settings.rewind_buffer_length = (int)rewindBufferLength.Value;
+
+            //Apply amplification
+            recorder.SetAmplification((float)afAmplicationTrack.Value / 10);
 
             //Save config
             recorder.SaveSettings();

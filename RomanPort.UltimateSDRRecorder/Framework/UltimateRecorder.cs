@@ -206,6 +206,12 @@ namespace RomanPort.UltimateSDRRecorder.Framework
 
             //Update swap size
             SetSwapLengthSeconds(settings.rewind_buffer_length);
+
+            //Show
+            ui.Invoke((MethodInvoker)delegate
+            {
+                ui.SetBufferEnabled(true);
+            });
         }
 
         public void OnAudioSamples(byte[] data)
@@ -219,6 +225,11 @@ namespace RomanPort.UltimateSDRRecorder.Framework
 
             //Allow hooks access
             hooks?.Invoke(data);
+        }
+
+        public void OnAudioEnded()
+        {
+            
         }
 
         public int GetSwapSizeFromSeconds(int seconds)

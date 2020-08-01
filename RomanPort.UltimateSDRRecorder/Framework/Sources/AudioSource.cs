@@ -9,9 +9,9 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
 {
     public class AudioSource : ISource
     {
-        public override void _SetSettings(ISharpControl control)
+        public AudioSource() : base(RecordingMode.Audio, WavSampleFormat.PCM16)
         {
-            SetSettings(control, RecordingMode.Audio, WavSampleFormat.PCM16);
+
         }
     }
 }

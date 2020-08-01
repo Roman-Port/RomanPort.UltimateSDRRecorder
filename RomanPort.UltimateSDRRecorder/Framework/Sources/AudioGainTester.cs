@@ -22,7 +22,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Sources
             source = new AudioSource();
             source.AudioStartedEvent += Source_AudioStartedEvent;
             source.AudioRecievedEvent += Source_AudioRecievedEvent;
-            source._SetSettings(control);
+            source.SetSettings(control);
             source.StartRecording();
         }
 
