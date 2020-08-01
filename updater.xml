@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AppUpdateData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <latest_version>1</latest_version>
-  <dialog_text>Initial Release
-  
-  This is the first version. This update message shouldn't be seen.</dialog_text>
+  <dialog_text>Initial Release\n\nThis is the first version. This update message shouldn't be seen.</dialog_text>
   <dialog_confirm_link>https://github.com/Roman-Port/RomanPort.UltimateSDRRecorder</dialog_confirm_link>
 </AppUpdateData>

@@ -18,7 +18,7 @@ namespace RomanPort.UltimateSDRRecorder.Updater
             InitializeComponent();
             this.plugin = plugin;
             this.update = update;
-            updateText.Text = update.dialog_text;
+            updateText.Text = update.dialog_text.Replace("\\n", "\n");
         }
 
         public UltimateSDRRecorderPlugin plugin;

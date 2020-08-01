@@ -56,7 +56,7 @@ namespace RomanPort.UltimateSDRRecorder
 
         private void appSettingsBtn_Click(object sender, EventArgs e)
         {
-            AppSettingsDialog fd = new AppSettingsDialog();
+            AppSettingsDialog fd = new AppSettingsDialog(plugin);
             fd.ShowDialog();
         }
 

@@ -30,7 +30,7 @@ namespace RomanPort.UltimateSDRRecorder
         public UltimateRecorder audioRecorderPlugin;
         public UltimateRecorder basebandRecorderPlugin;
 
-        public const int CURRENT_VERSION = 0;
+        public const int CURRENT_VERSION = 1;
         public const string UPDATE_URL = "https://raw.githubusercontent.com/Roman-Port/RomanPort.UltimateSDRRecorder/master/updater.xml";
 
         public UserControl Gui
@@ -128,7 +128,7 @@ namespace RomanPort.UltimateSDRRecorder
                 {
                     //Request
                     WebClient wc = new WebClient();
-                    string response = wc.DownloadString(UPDATE_URL);
+                    string response = wc.DownloadString(UPDATE_URL + "?cache=" + DateTime.UtcNow.Ticks + "&current_version=" + CURRENT_VERSION);
 
                     //Deserialize
                     XmlSerializer ser = new XmlSerializer(typeof(AppUpdateData));
