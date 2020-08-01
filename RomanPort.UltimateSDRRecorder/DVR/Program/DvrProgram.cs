@@ -24,6 +24,9 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
         public bool isCancelled;
         public bool isDeleted;
         public DateTime startedRecordingAt;
+        public string recordingRadioText;
+        public bool recordingRadioTextReady;
+        public string recordingFilepath;
 
         private DvrMultitoolOutputDevice recordingOutput;
 
@@ -95,6 +98,13 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
                 }
             } else
             {
+                //Check if we can update the RDS RadioText
+                if((DateTime.UtcNow - startedRecordingAt).TotalSeconds > 15 && !recordingRadioTextReady)
+                {
+                    recordingRadioText = control.RdsRadioText;
+                    recordingRadioTextReady = true;
+                }
+                
                 //Check if it's time to stop recording
                 if(trigger.CheckEnd(control))
                 {
@@ -162,6 +172,7 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
             //Set flags
             isRecording = true;
             startedRecordingAt = DateTime.UtcNow;
+            recordingRadioText = control.RdsRadioText;
 
             //Notify
             dvrInterface.OnProgramBegin(this);
@@ -174,6 +185,7 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
             string filename = profile.output_path;
             for (int i = 0; File.Exists(filename); i++)
                 filename = CreateFilenameWithIndex(i);
+            recordingFilepath = filename;
 
             //Create program
             recordingOutput = new DvrMultitoolOutputDevice(this, hostRecorder.sampleRate, UltimateRecorder.CHANNELS, UltimateRecorder.BYTES_PER_SAMPLE * 8, 1, filename);
@@ -207,7 +219,7 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
             NotifyEnd();
 
             //End the buffered stream
-            if(recordingOutput.recording)
+            if (recordingOutput.recording)
                 recordingOutput.EndEncoding();
         }
 
@@ -216,14 +228,17 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Program
         /// </summary>
         public void NotifyEnd()
         {
-            //Set status
-            isRecording = false;
-            
+            //Notify
+            dvrInterface.OnProgramEnd(this);
+
             //Unhook
             hostRecorder.hooks -= HostRecorder_AudioDataHook;
 
-            //Notify
-            dvrInterface.OnProgramEnd(this);
+            //Set status
+            isRecording = false;
+
+            //Set flags
+            recordingRadioTextReady = false;
         }
     }
 }

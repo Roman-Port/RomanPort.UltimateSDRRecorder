@@ -11,6 +11,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Output
     {
         public const int BITS_PER_SAMPLE = 16;
         public const int CHANNELS = 2;
+        public const int WAV_HEADER_SIZE = 44;
 
         public int sampleRate;
 

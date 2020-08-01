@@ -93,8 +93,23 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Interface
 
         public void OnProgramEnd(DvrProgram program)
         {
+            //End
             recordingPrograms.Remove(program);
+
+            //Add to history
             newRecordings++;
+            config.events.Add(new DvrPastEvent
+            {
+                occured_at = program.startedRecordingAt.Ticks,
+                program_name = program.profile.program_title,
+                recording_length_seconds = (int)program.GetTimeRecording().TotalSeconds,
+                recording_size = program.GetBytesWritten(),
+                rds_radio_text = program.recordingRadioText,
+                file_path = program.recordingFilepath
+            });
+            SaveConfig();
+
+            //Update UI
             OnRecordingProgramsChanged();
         }
 

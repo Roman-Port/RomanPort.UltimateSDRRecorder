@@ -9,6 +9,7 @@ namespace RomanPort.UltimateSDRRecorder.DVR.Entities
     public class DvrConfig
     {
         public List<DvrProgramProfile> profiles = new List<DvrProgramProfile>();
+        public List<DvrPastEvent> events = new List<DvrPastEvent>();
         public bool show_error_on_no_profiles = true;
     }
 }

@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DVR\Entities\DvrConfig.cs" />
+    <Compile Include="DVR\Entities\DvrPastEvent.cs" />
     <Compile Include="DVR\Entities\DvrProgramProfile.cs" />
     <Compile Include="DVR\Entities\SdrProgramProfileTrigger.cs" />
     <Compile Include="DVR\Interface\SdrDvrActiveRecordingStatusPanel.cs">

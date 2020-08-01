@@ -28,7 +28,7 @@ namespace RomanPort.UltimateSDRRecorder.Framework.Ui
         private void saveBtn_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Yes;
-            this.chosenName = defaultOption.text;
+            this.chosenName = ((RdsAutoNameHistoryName)nameList.SelectedItems[0].Tag).text;
             Close();
         }
 
